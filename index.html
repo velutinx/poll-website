@@ -75,11 +75,34 @@ h1 {
 </div>
 
 <script>
-function vote(id) {
-  alert("You voted for character " + id);
-  // later this will send the vote to the database
+const SUPABASE_URL = "https://uyfltjpfqbacdmoixhjg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_u0lYHOySc4V3D9-Gix0zhQ_xFIzrhd0";
+
+async function vote(optionId) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
+    method: "POST",
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json",
+      "Prefer": "return=minimal"
+    },
+    body: JSON.stringify({
+      poll_id: "character_poll_1",
+      option_id: optionId,
+      source: "website"
+    })
+  });
+
+  if (res.ok) {
+    alert("Vote recorded!");
+  } else {
+    const text = await res.text();
+    alert("Error recording vote:\n" + text);
+  }
 }
 </script>
+
 
 </body>
 </html>
