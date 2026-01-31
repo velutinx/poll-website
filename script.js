@@ -7,32 +7,21 @@ const TOTAL = 12;
 const grid = document.getElementById("grid");
 const debug = document.getElementById("debug");
 
-/* ────────────────────────────── */
-/* VOTER HASH (ONE PER COMPUTER)  */
-/* ────────────────────────────── */
-
-function getVoterHash() {
-  let hash = localStorage.getItem("voter_hash");
-  if (!hash) {
-    hash = crypto.randomUUID();
-    localStorage.setItem("voter_hash", hash);
-  }
-  return hash;
+/* ---- persistent voter identity ---- */
+let voterHash = localStorage.getItem("voter_hash");
+if (!voterHash) {
+  voterHash = crypto.randomUUID();
+  localStorage.setItem("voter_hash", voterHash);
 }
 
-const VOTER_HASH = getVoterHash();
-
-/* ────────────────────────────── */
-/* BUILD CARDS                    */
-/* ────────────────────────────── */
-
+/* ---- build cards ---- */
 for (let i = 1; i <= TOTAL; i++) {
   const card = document.createElement("div");
   card.className = "card";
   card.dataset.id = i;
 
   card.innerHTML = `
-    <img src="images/${i}.jpg" alt="Character ${i}">
+    <img src="images/${i}.jpg">
     <div class="overlay">0%</div>
     <div class="label">Character ${i}</div>
   `;
@@ -41,27 +30,21 @@ for (let i = 1; i <= TOTAL; i++) {
   grid.appendChild(card);
 }
 
-/* ────────────────────────────── */
-/* VOTE                           */
-/* ────────────────────────────── */
-
 async function vote(optionId) {
-  debug.textContent = "Submitting vote…";
-
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/votes`,
+    `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`,
     {
       method: "POST",
       headers: {
         apikey: SUPABASE_KEY,
-        Authorization: "Bearer " + SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
         "Content-Type": "application/json",
-        Prefer: "resolution=merge-duplicates"
+        Prefer: "resolution=ignore-duplicates"
       },
       body: JSON.stringify({
         poll_id: POLL_ID,
         option_id: optionId,
-        voter_hash: VOTER_HASH
+        voter_hash: voterHash
       })
     }
   );
@@ -69,16 +52,12 @@ async function vote(optionId) {
   if (!res.ok) {
     const text = await res.text();
     debug.textContent = "Vote failed (already voted)";
-    console.warn(text);
+    console.error(text);
     return;
   }
 
   fetchResults();
 }
-
-/* ────────────────────────────── */
-/* FETCH RESULTS                  */
-/* ────────────────────────────── */
 
 async function fetchResults() {
   const res = await fetch(
@@ -86,7 +65,7 @@ async function fetchResults() {
     {
       headers: {
         apikey: SUPABASE_KEY,
-        Authorization: "Bearer " + SUPABASE_KEY
+        Authorization: `Bearer ${SUPABASE_KEY}`
       }
     }
   );
@@ -95,7 +74,6 @@ async function fetchResults() {
   const totalVotes = votes.length;
 
   debug.textContent = `Total votes: ${totalVotes}`;
-
   if (totalVotes === 0) return;
 
   const counts = {};
@@ -110,6 +88,5 @@ async function fetchResults() {
   });
 }
 
-/* INITIAL LOAD + LIVE UPDATE */
 fetchResults();
 setInterval(fetchResults, 3000);
