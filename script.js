@@ -1,26 +1,24 @@
-/* ================= CONFIG ================= */
-
 const SUPABASE_URL = "https://uyfltjpfqbacdmoixhjg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_u0lYHOySc4V3D9-Gix0zhQ_xFIzrhd0";
 
 const POLL_ID = "character_poll_1";
 const TOTAL = 12;
 
-/* ============== ELEMENTS ================= */
-
 const grid = document.getElementById("grid");
 const debug = document.getElementById("debug");
 
-/* ============== VOTER ID ================= */
-
+/* -----------------------------
+   Persistent anonymous voter ID
+-------------------------------- */
 let voterId = localStorage.getItem("voter_id");
 if (!voterId) {
   voterId = crypto.randomUUID();
   localStorage.setItem("voter_id", voterId);
 }
 
-/* ============== BUILD GRID ================ */
-
+/* -----------------------------
+   Build cards
+-------------------------------- */
 for (let i = 1; i <= TOTAL; i++) {
   const card = document.createElement("div");
   card.className = "card";
@@ -36,9 +34,12 @@ for (let i = 1; i <= TOTAL; i++) {
   grid.appendChild(card);
 }
 
-/* ============== VOTE (UPSERT) ============== */
-
+/* -----------------------------
+   Vote (UPSERT)
+-------------------------------- */
 async function vote(optionId) {
+  debug.textContent = "Submitting vote…";
+
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_id`,
     {
@@ -52,23 +53,25 @@ async function vote(optionId) {
       body: JSON.stringify({
         poll_id: POLL_ID,
         voter_id: voterId,
-        option_id: optionId
+        option_id: optionId,
+        source: "website"
       })
     }
   );
 
   if (!res.ok) {
     const err = await res.text();
-    debug.textContent = "Vote failed";
-    console.error("SUPABASE ERROR:", err);
+    debug.textContent = "VOTE FAILED";
+    console.error("Vote error:", err);
     return;
   }
 
   fetchResults();
 }
 
-/* ============== RESULTS =================== */
-
+/* -----------------------------
+   Fetch + render results
+-------------------------------- */
 async function fetchResults() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
@@ -83,25 +86,25 @@ async function fetchResults() {
   const votes = await res.json();
   const totalVotes = votes.length;
 
-  debug.textContent = `Total votes: ${totalVotes}`;
-
-  if (totalVotes === 0) return;
+  debug.textContent = `Total votes detected: ${totalVotes}`;
 
   const counts = {};
   for (let i = 1; i <= TOTAL; i++) counts[i] = 0;
-
   votes.forEach(v => counts[v.option_id]++);
 
   document.querySelectorAll(".card").forEach(card => {
     const id = Number(card.dataset.id);
-    const percent = Math.round((counts[id] / totalVotes) * 100);
+    const percent = totalVotes
+      ? Math.round((counts[id] / totalVotes) * 100)
+      : 0;
 
     card.classList.add("show");
     card.querySelector(".overlay").textContent = percent + "%";
   });
 }
 
-/* ============== LIVE UPDATE =============== */
-
+/* -----------------------------
+   Initial load + refresh
+-------------------------------- */
 fetchResults();
 setInterval(fetchResults, 3000);
