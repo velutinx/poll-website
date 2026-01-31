@@ -29,7 +29,6 @@ body {
   border-radius: 12px;
   padding: 10px;
   cursor: pointer;
-  overflow: hidden;
 }
 
 .card img {
@@ -42,6 +41,7 @@ body {
   font-weight: bold;
 }
 
+/* Overlay — HIDDEN BY DEFAULT */
 .overlay {
   position: absolute;
   inset: 0;
@@ -54,10 +54,10 @@ body {
   color: black;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s ease;
 }
 
-.card.show .overlay {
+/* Only shown when results exist */
+.card.has-results .overlay {
   opacity: 1;
 }
 </style>
@@ -66,44 +66,36 @@ body {
 <body>
 
 <h1>Vote for Your Favorite Character</h1>
-<p>Click an image to vote</p>
+<p>Click a character to vote</p>
 
 <div class="grid" id="grid"></div>
 
 <script>
 const SUPABASE_URL = "https://uyfltjpfqbacdmoixhjg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_u0lYHOySc4V3D9-Gix0zhQ_xFIzrhd0";
-const POLL_ID = "character_poll_1";
+
+const POLL_ID = "character_poll_1"; // MUST MATCH DB
 const TOTAL = 12;
 
 const grid = document.getElementById("grid");
 
 /* Build cards */
 for (let i = 1; i <= TOTAL; i++) {
-  const c = document.createElement("div");
-  c.className = "card";
-  c.dataset.id = i;
-  c.innerHTML = `
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.id = i;
+
+  card.innerHTML = `
     <img src="images/${i}.jpg">
     <div class="overlay">0%</div>
     <div class="label">Character ${i}</div>
   `;
-  c.onclick = () => vote(i);
-  grid.appendChild(c);
-}
 
-/* Optimistic click feedback */
-function optimistic(optionId) {
-  document.querySelectorAll(".card").forEach(card => {
-    card.classList.add("show");
-    card.querySelector(".overlay").textContent =
-      Number(card.dataset.id) === optionId ? "100%" : "0%";
-  });
+  card.onclick = () => vote(i);
+  grid.appendChild(card);
 }
 
 async function vote(optionId) {
-  optimistic(optionId);
-
   await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
     method: "POST",
     headers: {
@@ -119,8 +111,7 @@ async function vote(optionId) {
     })
   });
 
-  /* FORCE real sync immediately */
-  setTimeout(fetchResults, 300);
+  fetchResults();
 }
 
 async function fetchResults() {
@@ -137,22 +128,25 @@ async function fetchResults() {
   const votes = await res.json();
   const totalVotes = votes.length;
 
+  if (totalVotes === 0) {
+    console.warn("No votes found for poll_id:", POLL_ID);
+    return;
+  }
+
   const counts = {};
   for (let i = 1; i <= TOTAL; i++) counts[i] = 0;
   votes.forEach(v => counts[v.option_id]++);
 
   document.querySelectorAll(".card").forEach(card => {
     const id = Number(card.dataset.id);
-    const percent = totalVotes
-      ? Math.round((counts[id] / totalVotes) * 100)
-      : 0;
+    const percent = Math.round((counts[id] / totalVotes) * 100);
 
-    card.classList.add("show");
+    card.classList.add("has-results");
     card.querySelector(".overlay").textContent = percent + "%";
   });
 }
 
-/* Live updates */
+/* Initial load */
 fetchResults();
 setInterval(fetchResults, 5000);
 </script>
