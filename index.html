@@ -65,7 +65,7 @@ body {
 
 <body>
 
-<h1>Vote for Your Favorite2 Character</h1>
+<h1>Vote for Your Favorite Character</h1>
 <p>Click an image to vote</p>
 
 <div class="grid" id="grid"></div>
@@ -106,4 +106,56 @@ async function vote(optionId) {
 
   await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
     method: "POST",
-    header
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json",
+      "Prefer": "return=minimal"
+    },
+    body: JSON.stringify({
+      poll_id: POLL_ID,
+      option_id: optionId,
+      source: "website"
+    })
+  });
+
+  /* FORCE real sync immediately */
+  setTimeout(fetchResults, 300);
+}
+
+async function fetchResults() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
+    {
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + SUPABASE_KEY
+      }
+    }
+  );
+
+  const votes = await res.json();
+  const totalVotes = votes.length;
+
+  const counts = {};
+  for (let i = 1; i <= TOTAL; i++) counts[i] = 0;
+  votes.forEach(v => counts[v.option_id]++);
+
+  document.querySelectorAll(".card").forEach(card => {
+    const id = Number(card.dataset.id);
+    const percent = totalVotes
+      ? Math.round((counts[id] / totalVotes) * 100)
+      : 0;
+
+    card.classList.add("show");
+    card.querySelector(".overlay").textContent = percent + "%";
+  });
+}
+
+/* Live updates */
+fetchResults();
+setInterval(fetchResults, 5000);
+</script>
+
+</body>
+</html>
