@@ -90,84 +90,8 @@ body {
 
 <div class="grid" id="grid"></div>
 
-<script>
-const SUPABASE_URL = "https://uyfltjpfqbacdmoixhjg.supabase.co";
-const SUPABASE_KEY = "sb_publishable_u0lYHOySc4V3D9-Gix0zhQ_xFIzrhd0";
-const POLL_ID = "character_poll_1";
-const TOTAL = 12;
+<script src="script.js"></script>
 
-const grid = document.getElementById("grid");
-const debug = document.getElementById("debug");
-
-/* Build cards */
-for (let i = 1; i <= TOTAL; i++) {
-  const card = document.createElement("div");
-  card.className = "card";
-  card.dataset.id = i;
-
-  card.innerHTML = `
-    <img src="images/${i}.jpg">
-    <div class="overlay">0%</div>
-    <div class="label">Character ${i}</div>
-  `;
-
-  card.onclick = () => vote(i);
-  grid.appendChild(card);
-}
-
-async function vote(optionId) {
-  await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
-    method: "POST",
-    headers: {
-      "apikey": SUPABASE_KEY,
-      "Authorization": "Bearer " + SUPABASE_KEY,
-      "Content-Type": "application/json",
-      "Prefer": "return=minimal"
-    },
-    body: JSON.stringify({
-      poll_id: POLL_ID,
-      option_id: optionId,
-      source: "website"
-    })
-  });
-
-  fetchResults();
-}
-
-async function fetchResults() {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
-    {
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + SUPABASE_KEY
-      }
-    }
-  );
-
-  const votes = await res.json();
-  const totalVotes = votes.length;
-
-  debug.textContent = `Total votes detected: ${totalVotes}`;
-
-  if (totalVotes === 0) return;
-
-  const counts = {};
-  for (let i = 1; i <= TOTAL; i++) counts[i] = 0;
-  votes.forEach(v => counts[v.option_id]++);
-
-  document.querySelectorAll(".card").forEach(card => {
-    const id = Number(card.dataset.id);
-    const percent = Math.round((counts[id] / totalVotes) * 100);
-    card.classList.add("show");
-    card.querySelector(".overlay").textContent = percent + "%";
-  });
-}
-
-/* Start polling */
-fetchResults();
-setInterval(fetchResults, 3000);
-</script>
 
 </body>
 </html>
