@@ -10,18 +10,9 @@ body {
   margin: 0;
   padding: 30px;
   text-align: center;
-
-  /* BACKGROUND IMAGE */
   background-image: url("background.jpg");
-background-size: 512px 768px;
-background-repeat: repeat;
-background-position: top center;
-
-}
-
-h1, p {
-  color: #000;
-  text-shadow: 0 0 4px rgba(255,255,255,0.8);
+  background-size: 512px 768px;
+  background-repeat: repeat;
 }
 
 .grid {
@@ -44,14 +35,17 @@ h1, p {
 .card img {
   width: 100%;
   border-radius: 8px;
-  display: block;
 }
 
-/* Overlay */
+.label {
+  margin-top: 8px;
+  font-weight: bold;
+}
+
 .overlay {
   position: absolute;
   inset: 0;
-  background: rgba(70, 120, 255, 0.6);
+  background: rgba(70,120,255,0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,12 +57,7 @@ h1, p {
   transition: opacity 0.15s ease;
 }
 
-.label {
-  margin-top: 8px;
-  font-weight: bold;
-}
-
-.card.show-results .overlay {
+.card.show .overlay {
   opacity: 1;
 }
 </style>
@@ -77,101 +66,44 @@ h1, p {
 <body>
 
 <h1>Vote for Your Favorite Character</h1>
-<p>Click a character to vote</p>
+<p>Click an image to vote</p>
 
 <div class="grid" id="grid"></div>
 
 <script>
 const SUPABASE_URL = "https://uyfltjpfqbacdmoixhjg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_u0lYHOySc4V3D9-Gix0zhQ_xFIzrhd0";
-
 const POLL_ID = "character_poll_1";
-const TOTAL_CHARACTERS = 12;
+const TOTAL = 12;
 
 const grid = document.getElementById("grid");
 
 /* Build cards */
-for (let i = 1; i <= TOTAL_CHARACTERS; i++) {
-  const card = document.createElement("div");
-  card.className = "card";
-  card.dataset.id = i;
-
-  card.innerHTML = `
+for (let i = 1; i <= TOTAL; i++) {
+  const c = document.createElement("div");
+  c.className = "card";
+  c.dataset.id = i;
+  c.innerHTML = `
     <img src="images/${i}.jpg">
-    <div class="overlay">100%</div>
+    <div class="overlay">0%</div>
     <div class="label">Character ${i}</div>
   `;
-
-  card.onclick = () => vote(i);
-  grid.appendChild(card);
+  c.onclick = () => vote(i);
+  grid.appendChild(c);
 }
 
-function showOptimisticVote(optionId) {
+/* Optimistic click feedback */
+function optimistic(optionId) {
   document.querySelectorAll(".card").forEach(card => {
-    card.classList.add("show-results");
-    const overlay = card.querySelector(".overlay");
-    overlay.textContent =
+    card.classList.add("show");
+    card.querySelector(".overlay").textContent =
       Number(card.dataset.id) === optionId ? "100%" : "0%";
   });
 }
 
 async function vote(optionId) {
-  /* IMMEDIATE visual feedback */
-  showOptimisticVote(optionId);
+  optimistic(optionId);
 
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
-      method: "POST",
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + SUPABASE_KEY,
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal"
-      },
-      body: JSON.stringify({
-        poll_id: POLL_ID,
-        option_id: optionId,
-        source: "website"
-      })
-    });
-  } catch (e) {
-    console.error("Vote failed:", e);
-  }
-
-  fetchResults();
-}
-
-async function fetchResults() {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
-    {
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + SUPABASE_KEY
-      }
-    }
-  );
-
-  const data = await res.json();
-  const totalVotes = data.length;
-
-  if (totalVotes === 0) return;
-
-  const counts = {};
-  for (let i = 1; i <= TOTAL_CHARACTERS; i++) counts[i] = 0;
-  data.forEach(v => counts[v.option_id]++);
-
-  document.querySelectorAll(".card").forEach(card => {
-    const id = Number(card.dataset.id);
-    const percent = Math.round((counts[id] / totalVotes) * 100);
-    card.classList.add("show-results");
-    card.querySelector(".overlay").textContent = percent + "%";
-  });
-}
-
-fetchResults();
-setInterval(fetchResults, 5000);
-</script>
-
-</body>
-</html>
+  await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
+    method: "POST",
+    header
