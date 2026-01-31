@@ -63,7 +63,7 @@ async function fetchResults() {
   const votes = await res.json();
   const totalVotes = votes.length;
 
-  debug.textContent = `Total votes detected: ${totalVotes}`;
+  debug.textContent = `Total 1votes detected: ${totalVotes}`;
 
   if (totalVotes === 0) return;
 
