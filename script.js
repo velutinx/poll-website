@@ -7,21 +7,21 @@ const TOTAL = 12;
 const grid = document.getElementById("grid");
 const debug = document.getElementById("debug");
 
-/* ---- persistent voter identity ---- */
+/* ---------- voter hash (1 vote per browser) ---------- */
 let voterHash = localStorage.getItem("voter_hash");
 if (!voterHash) {
   voterHash = crypto.randomUUID();
   localStorage.setItem("voter_hash", voterHash);
 }
 
-/* ---- build cards ---- */
+/* ---------- build cards ---------- */
 for (let i = 1; i <= TOTAL; i++) {
   const card = document.createElement("div");
   card.className = "card";
   card.dataset.id = i;
 
   card.innerHTML = `
-    <img src="images/${i}.jpg">
+    <img src="images/${i}.jpg" alt="Character ${i}">
     <div class="overlay">0%</div>
     <div class="label">Character ${i}</div>
   `;
@@ -30,6 +30,7 @@ for (let i = 1; i <= TOTAL; i++) {
   grid.appendChild(card);
 }
 
+/* ---------- vote ---------- */
 async function vote(optionId) {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`,
@@ -37,14 +38,15 @@ async function vote(optionId) {
       method: "POST",
       headers: {
         apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
+        Authorization: "Bearer " + SUPABASE_KEY,
         "Content-Type": "application/json",
         Prefer: "resolution=ignore-duplicates"
       },
       body: JSON.stringify({
         poll_id: POLL_ID,
         option_id: optionId,
-        voter_hash: voterHash
+        voter_hash: voterHash,
+        source: "website"   // ← THIS WAS MISSING
       })
     }
   );
@@ -59,13 +61,14 @@ async function vote(optionId) {
   fetchResults();
 }
 
+/* ---------- results ---------- */
 async function fetchResults() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
     {
       headers: {
         apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`
+        Authorization: "Bearer " + SUPABASE_KEY
       }
     }
   );
@@ -74,6 +77,7 @@ async function fetchResults() {
   const totalVotes = votes.length;
 
   debug.textContent = `Total votes: ${totalVotes}`;
+
   if (totalVotes === 0) return;
 
   const counts = {};
@@ -88,5 +92,6 @@ async function fetchResults() {
   });
 }
 
+/* ---------- start ---------- */
 fetchResults();
 setInterval(fetchResults, 3000);
