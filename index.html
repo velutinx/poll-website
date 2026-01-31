@@ -15,6 +15,15 @@ body {
   background-repeat: repeat;
 }
 
+#debug {
+  margin-bottom: 15px;
+  font-weight: bold;
+  background: rgba(255,255,255,0.8);
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -41,7 +50,6 @@ body {
   font-weight: bold;
 }
 
-/* Overlay — HIDDEN BY DEFAULT */
 .overlay {
   position: absolute;
   inset: 0;
@@ -56,8 +64,7 @@ body {
   pointer-events: none;
 }
 
-/* Only shown when results exist */
-.card.has-results .overlay {
+.card.show .overlay {
   opacity: 1;
 }
 </style>
@@ -68,16 +75,18 @@ body {
 <h1>Vote for Your Favorite Character</h1>
 <p>Click a character to vote</p>
 
+<div id="debug">Loading votes…</div>
+
 <div class="grid" id="grid"></div>
 
 <script>
 const SUPABASE_URL = "https://uyfltjpfqbacdmoixhjg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_u0lYHOySc4V3D9-Gix0zhQ_xFIzrhd0";
-
-const POLL_ID = "character_poll_1"; // MUST MATCH DB
+const POLL_ID = "character_poll_1";
 const TOTAL = 12;
 
 const grid = document.getElementById("grid");
+const debug = document.getElementById("debug");
 
 /* Build cards */
 for (let i = 1; i <= TOTAL; i++) {
@@ -128,10 +137,9 @@ async function fetchResults() {
   const votes = await res.json();
   const totalVotes = votes.length;
 
-  if (totalVotes === 0) {
-    console.warn("No votes found for poll_id:", POLL_ID);
-    return;
-  }
+  debug.textContent = `Total votes detected: ${totalVotes}`;
+
+  if (totalVotes === 0) return;
 
   const counts = {};
   for (let i = 1; i <= TOTAL; i++) counts[i] = 0;
@@ -140,15 +148,14 @@ async function fetchResults() {
   document.querySelectorAll(".card").forEach(card => {
     const id = Number(card.dataset.id);
     const percent = Math.round((counts[id] / totalVotes) * 100);
-
-    card.classList.add("has-results");
+    card.classList.add("show");
     card.querySelector(".overlay").textContent = percent + "%";
   });
 }
 
-/* Initial load */
+/* Start polling */
 fetchResults();
-setInterval(fetchResults, 5000);
+setInterval(fetchResults, 3000);
 </script>
 
 </body>
