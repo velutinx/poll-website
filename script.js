@@ -13,7 +13,6 @@ const debug = document.getElementById("debug");
 
 /* ============== VOTER ID ================= */
 
-// One vote per browser
 let voterId = localStorage.getItem("voter_id");
 if (!voterId) {
   voterId = crypto.randomUUID();
@@ -37,27 +36,31 @@ for (let i = 1; i <= TOTAL; i++) {
   grid.appendChild(card);
 }
 
-/* ============== VOTE ====================== */
+/* ============== VOTE (UPSERT) ============== */
 
 async function vote(optionId) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: "Bearer " + SUPABASE_KEY,
-      "Content-Type": "application/json",
-      Prefer: "resolution=merge-duplicates"
-    },
-    body: JSON.stringify({
-      poll_id: POLL_ID,
-      voter_id: voterId,
-      option_id: optionId
-    })
-  });
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_id`,
+    {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates"
+      },
+      body: JSON.stringify({
+        poll_id: POLL_ID,
+        voter_id: voterId,
+        option_id: optionId
+      })
+    }
+  );
 
   if (!res.ok) {
+    const err = await res.text();
     debug.textContent = "Vote failed";
-    console.error(await res.text());
+    console.error("SUPABASE ERROR:", err);
     return;
   }
 
