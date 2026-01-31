@@ -56,7 +56,7 @@ p {
   font-weight: bold;
   color: black;
   opacity: 0;
-  pointer-events: none; /* 🔑 FIX: overlay no longer blocks clicks */
+  pointer-events: none;
   transition: opacity 0.15s ease;
 }
 
@@ -65,7 +65,7 @@ p {
   font-weight: bold;
 }
 
-/* Only show overlay when results are active */
+/* Show overlay ONLY when results are active */
 .card.show-results .overlay {
   opacity: 1;
 }
@@ -75,7 +75,7 @@ p {
 <body>
 
 <h1>Vote for Your Favorite Character</h1>
-<p>Click a character to vote (live results) <h1>VERSION TEST</h1> </p>
+<p>Click a character to vote</p>
 
 <div class="grid" id="grid"></div>
 
@@ -86,9 +86,9 @@ const SUPABASE_KEY = "sb_publishable_u0lYHOySc4V3D9-Gix0zhQ_xFIzrhd0";
 const POLL_ID = "character_poll_1";
 const TOTAL_CHARACTERS = 12;
 
-/* Build grid */
 const grid = document.getElementById("grid");
 
+/* Build grid */
 for (let i = 1; i <= TOTAL_CHARACTERS; i++) {
   const card = document.createElement("div");
   card.className = "card";
@@ -136,12 +136,19 @@ async function fetchResults() {
 
   const data = await res.json();
 
+  const totalVotes = data.length;
+
+  /* If no votes yet: hide overlays completely */
+  if (totalVotes === 0) {
+    document.querySelectorAll(".card").forEach(card => {
+      card.classList.remove("show-results");
+    });
+    return;
+  }
+
   const counts = {};
   for (let i = 1; i <= TOTAL_CHARACTERS; i++) counts[i] = 0;
-
   data.forEach(v => counts[v.option_id]++);
-
-  const totalVotes = data.length || 1;
 
   document.querySelectorAll(".card").forEach(card => {
     const id = Number(card.dataset.id);
