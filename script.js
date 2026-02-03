@@ -6,6 +6,12 @@ const TOTAL = 12;
 
 const grid = document.getElementById("grid");
 const debug = document.getElementById("debug");
+const focus = document.getElementById("focus");
+const focusImg = document.getElementById("focusImg");
+const resultsBox = document.getElementById("results");
+
+let currentFocus = 1;
+let focusTimer;
 
 /* ---------- voter hash ---------- */
 let voterHash = localStorage.getItem("voter_hash");
@@ -21,7 +27,7 @@ for (let i = 1; i <= TOTAL; i++) {
   card.dataset.id = i;
 
   card.innerHTML = `
-    <img src="images/${i}.jpg" alt="Character ${i}">
+    <img src="images/${i}.jpg">
     <div class="progress">
       <div class="progress-fill"></div>
       <div class="progress-text">0%</div>
@@ -29,13 +35,17 @@ for (let i = 1; i <= TOTAL; i++) {
     <div class="label">Character ${i}</div>
   `;
 
-  card.addEventListener("click", () => vote(i));
+  card.addEventListener("click", () => {
+    vote(i);
+    showFocus(i);
+  });
+
   grid.appendChild(card);
 }
 
-/* ---------- UPSERT vote ---------- */
+/* ---------- voting ---------- */
 async function vote(optionId) {
-  const res = await fetch(
+  await fetch(
     `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`,
     {
       method: "POST",
@@ -48,21 +58,36 @@ async function vote(optionId) {
       body: JSON.stringify({
         poll_id: POLL_ID,
         option_id: optionId,
-        voter_hash: voterHash,
-        source: "website"
+        voter_hash: voterHash
       })
     }
   );
 
-  if (!res.ok) {
-    debug.textContent = "Vote failed";
-    return;
-  }
-
   fetchResults();
 }
 
-/* ---------- fetch + render results ---------- */
+/* ---------- focus animation ---------- */
+function showFocus(id) {
+  clearTimeout(focusTimer);
+
+  focus.classList.remove("show", "fill");
+  focusImg.src = `images/${id}.jpg`;
+
+  requestAnimationFrame(() => {
+    focus.classList.add("show");
+    focus.classList.add("fill");
+  });
+
+  currentFocus = id;
+  focusTimer = setTimeout(autoRotate, 2800);
+}
+
+function autoRotate() {
+  const next = currentFocus % TOTAL + 1;
+  showFocus(next);
+}
+
+/* ---------- results from votes table ---------- */
 async function fetchResults() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
@@ -75,9 +100,7 @@ async function fetchResults() {
   );
 
   const votes = await res.json();
-  const totalVotes = votes.length;
-
-  debug.textContent = `Total votes: ${totalVotes}`;
+  debug.textContent = `Total votes: ${votes.length}`;
 
   const counts = {};
   for (let i = 1; i <= TOTAL; i++) counts[i] = 0;
@@ -86,16 +109,35 @@ async function fetchResults() {
   document.querySelectorAll(".card").forEach(card => {
     const id = Number(card.dataset.id);
     const percent =
-      totalVotes === 0 ? 0 : Math.round((counts[id] / totalVotes) * 100);
+      votes.length === 0 ? 0 : Math.round((counts[id] / votes.length) * 100);
 
-    const fill = card.querySelector(".progress-fill");
-    const text = card.querySelector(".progress-text");
-
-    fill.style.width = percent + "%";
-    text.textContent = percent + "%";
+    card.querySelector(".progress-fill").style.width = percent + "%";
+    card.querySelector(".progress-text").textContent = percent + "%";
   });
 }
 
-/* ---------- initial + refresh ---------- */
+/* ---------- leaderboard (poll_result) ---------- */
+async function fetchLeaderboard() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&order=score.desc`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY
+      }
+    }
+  );
+
+  const rows = await res.json();
+  resultsBox.innerHTML = rows
+    .map(r => `Character ${r.option_id}: ${r.score.toFixed(1)}`)
+    .join("<br>");
+}
+
+/* ---------- init ---------- */
 fetchResults();
+fetchLeaderboard();
+showFocus(1);
+
 setInterval(fetchResults, 30000);
+setInterval(fetchLeaderboard, 30000);
