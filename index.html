@@ -7,32 +7,53 @@
 <style>
 body {
   margin: 0;
-  padding: 30px;
+  padding: 40px;
   font-family: Arial, sans-serif;
   background-image: url("background.jpg");
   background-size: 512px 768px;
   background-repeat: repeat;
 }
 
-/* ---------- FEATURED ---------- */
-.featured {
-  display: flex;
-  justify-content: space-between;
-  max-width: 1200px;
-  margin: 0 auto 30px;
+h1, p { text-align: center; }
+
+/* ---------- layout ---------- */
+.page {
+  position: relative;
+  max-width: 1600px;
+  margin: auto;
 }
 
-.featured-card {
-  width: 260px;
-  background: rgba(245,241,223,0.98);
-  border-radius: 16px;
-  padding: 10px;
-  text-align: center;
+.center {
+  position: relative;
+  z-index: 10; /* MUST be above big cards */
 }
 
-.featured-card img {
+/* ---------- BIG CARDS ---------- */
+.big-card {
+  position: absolute;
+  top: -80px;
+  width: 700px;
+  height: 1100px;
+  border-radius: 24px;
+  background: rgba(0,0,0,0.12);
+  overflow: hidden;
+  pointer-events: none; /* IMPORTANT */
+  z-index: 1;
+}
+
+#leftBig { left: -760px; }
+#rightBig { right: -760px; }
+
+.big-card img {
   width: 100%;
-  border-radius: 12px;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.big-card.show img {
+  opacity: 1;
 }
 
 /* ---------- GRID ---------- */
@@ -40,10 +61,6 @@ body {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 16px;
-  max-width: 1200px;
-  margin: auto;
-  position: relative;
-  z-index: 2; /* IMPORTANT */
 }
 
 /* ---------- CARDS ---------- */
@@ -53,7 +70,6 @@ body {
   padding: 8px;
   cursor: pointer;
   position: relative;
-  pointer-events: auto; /* FIX CLICK */
 }
 
 .card img {
@@ -61,8 +77,12 @@ body {
   border-radius: 8px;
 }
 
+/* progress bar */
 .progress {
-  margin-top: 6px;
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 26px;
   height: 14px;
   border-radius: 7px;
   background: rgba(0,0,0,0.15);
@@ -77,84 +97,81 @@ body {
 }
 
 .progress-text {
-  text-align: center;
-  font-size: 11px;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: bold;
+  font-size: 11px;
 }
 
 .label {
-  margin-top: 6px;
+  margin-top: 14px;
   text-align: center;
   font-size: 13px;
   font-weight: bold;
 }
 
-/* ---------- BOTTOM ---------- */
-.bottom {
-  max-width: 1200px;
-  margin: 20px auto 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
+/* ---------- LEADERBOARD ---------- */
 #leaderboard {
+  max-width: 260px;
+  margin: 16px auto 0;
   background: rgba(255,255,255,0.9);
-  padding: 10px;
+  padding: 8px 10px;
   border-radius: 10px;
   font-size: 12px;
-  width: 260px;
 }
 
 /* ---------- DISCORD ---------- */
+.discord-link {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
 .discord-link img {
-  width: 192px; /* x2 SIZE */
+  width: 144px; /* 1.5x previous */
   transition: transform 0.25s ease;
 }
 
 .discord-link img:hover {
-  animation: blobWobble 1.6s ease-in-out infinite;
-}
-
-@keyframes blobWobble {
-  0% { transform: scale(1.1) rotate(0deg); }
-  25% { transform: scale(1.1) rotate(-4deg); }
-  50% { transform: scale(1.1) rotate(4deg); }
-  75% { transform: scale(1.1) rotate(-3deg); }
-  100% { transform: scale(1.1) rotate(0deg); }
+  transform: scale(1.08);
 }
 </style>
 </head>
 
 <body>
 
-<h1 style="text-align:center;">Vote for Your Favorite Character</h1>
+<h1>Vote for Your Favorite Character</h1>
+<p>Click once — you can change your vote anytime</p>
 
-<div class="featured">
-  <div class="featured-card" id="featured-left">
-    <img src="images/1.jpg">
-    <div class="label">—</div>
+<div class="page">
+
+  <div class="big-card" id="leftBig">
+    <img id="leftImg">
   </div>
 
-  <div class="featured-card" id="featured-right">
-    <img src="images/2.jpg">
-    <div class="label">—</div>
-  </div>
-</div>
-
-<div class="grid" id="grid"></div>
-
-<div class="bottom">
-  <div id="leaderboard">
-    <h3>Leaderboard</h3>
-    <div id="results">Loading…</div>
+  <div class="big-card" id="rightBig">
+    <img id="rightImg">
   </div>
 
-  <a class="discord-link"
-     href="https://discord.gg/6sHSVMEE"
-     target="_blank">
-    <img src="LogoDiscord.png">
-  </a>
+  <div class="center">
+    <div class="grid" id="grid"></div>
+
+    <div id="leaderboard">
+      <h3>Leaderboard</h3>
+      <div class="tooltip">Includes Discord + Website votes</div>
+      <div id="results">Loading…</div>
+    </div>
+
+    <div class="discord-link">
+      <a href="https://discord.gg/6sHSVMEE" target="_blank">
+        <img src="LogoDiscord.png">
+      </a>
+    </div>
+  </div>
+
 </div>
 
 <script type="module" src="script.js"></script>
