@@ -7,10 +7,15 @@ const TOTAL = 12;
 const grid = document.getElementById("grid");
 const resultsBox = document.getElementById("results");
 
-const featuredLeft = document.getElementById("featured-left");
-const featuredRight = document.getElementById("featured-right");
+const leftImg = document.getElementById("leftImg");
+const leftBig = document.getElementById("leftBig");
 
-/* ---------- voter ---------- */
+const rightImg = document.getElementById("rightImg");
+const rightBig = document.getElementById("rightBig");
+
+let rotateIndex = 1;
+
+/* ---------- voter id ---------- */
 let voterHash = localStorage.getItem("voter_hash");
 if (!voterHash) {
   voterHash = crypto.randomUUID();
@@ -25,72 +30,114 @@ for (let i = 1; i <= TOTAL; i++) {
 
   card.innerHTML = `
     <img src="images/${i}.jpg">
-    <div class="progress"><div class="progress-fill"></div></div>
-    <div class="progress-text">0%</div>
-    <div class="label">Loading…</div>
+    <div class="progress">
+      <div class="progress-fill"></div>
+      <div class="progress-text">0%</div>
+    </div>
+    <div class="label">Character ${i}</div>
   `;
 
-  card.addEventListener("click", () => vote(i));
+  card.onclick = async () => {
+    showSelected(i);
+    await vote(i);
+  };
+
   grid.appendChild(card);
 }
 
+/* ---------- selected ---------- */
+function showSelected(id) {
+  leftBig.classList.remove("show");
+  leftImg.src = `images/${id}.jpg`;
+  requestAnimationFrame(() => leftBig.classList.add("show"));
+}
+
+/* ---------- rotating ---------- */
+function rotate() {
+  rightBig.classList.remove("show");
+  rightImg.src = `images/${rotateIndex}.jpg`;
+  requestAnimationFrame(() => rightBig.classList.add("show"));
+  rotateIndex = rotateIndex % TOTAL + 1;
+}
+
+setInterval(rotate, 3500);
+rotate();
+showSelected(1);
+
 /* ---------- vote ---------- */
 async function vote(optionId) {
-  await fetch(`${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: "Bearer " + SUPABASE_KEY,
-      "Content-Type": "application/json",
-      Prefer: "resolution=merge-duplicates"
-    },
-    body: JSON.stringify({
-      poll_id: POLL_ID,
-      option_id: optionId,
-      voter_hash: voterHash,
-      source: "website"
-    })
-  });
+  await fetch(
+    `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`,
+    {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates"
+      },
+      body: JSON.stringify({
+        poll_id: POLL_ID,
+        option_id: optionId,
+        voter_hash: voterHash,
+        source: "website"
+      })
+    }
+  );
 
   fetchResults();
+  fetchLeaderboard();
 }
 
 /* ---------- results ---------- */
 async function fetchResults() {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}`,
-    { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } }
+    `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
+    {
+      cache: "no-store",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY
+      }
+    }
+  );
+
+  const votes = await res.json();
+  const counts = {};
+  for (let i = 1; i <= TOTAL; i++) counts[i] = 0;
+  votes.forEach(v => counts[v.option_id]++);
+
+  document.querySelectorAll(".card").forEach(card => {
+    const id = Number(card.dataset.id);
+    const percent =
+      votes.length === 0 ? 0 : Math.round((counts[id] / votes.length) * 100);
+
+    card.querySelector(".progress-fill").style.width = percent + "%";
+    card.querySelector(".progress-text").textContent = percent + "%";
+  });
+}
+
+/* ---------- leaderboard ---------- */
+async function fetchLeaderboard() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&order=score.desc`,
+    {
+      cache: "no-store",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY
+      }
+    }
   );
 
   const rows = await res.json();
-  const total = rows.reduce((a, b) => a + b.score, 0);
-
-  rows.forEach(r => {
-    const card = document.querySelector(`.card[data-id="${r.option_id}"]`);
-    if (!card) return;
-
-    const pct = total ? Math.round((r.score / total) * 100) : 0;
-    card.querySelector(".progress-fill").style.width = pct + "%";
-    card.querySelector(".progress-text").textContent = pct + "%";
-    card.querySelector(".label").textContent = r.character_name;
-  });
-
-  const sorted = [...rows].sort((a,b)=>b.score-a.score);
-
-  // featured cards
-  if (sorted[0]) {
-    featuredLeft.querySelector("img").src = `images/${sorted[0].option_id}.jpg`;
-    featuredLeft.querySelector(".label").textContent = sorted[0].character_name;
-  }
-  if (sorted[1]) {
-    featuredRight.querySelector("img").src = `images/${sorted[1].option_id}.jpg`;
-    featuredRight.querySelector(".label").textContent = sorted[1].character_name;
-  }
-
-  resultsBox.innerHTML = sorted
-    .map(r => `${r.character_name}: ${r.score.toFixed(1)}`)
+  resultsBox.innerHTML = rows
+    .map(r => `Character ${r.option_id}: ${r.score.toFixed(1)}`)
     .join("<br>");
 }
 
 fetchResults();
+fetchLeaderboard();
 setInterval(fetchResults, 30000);
+setInterval(fetchLeaderboard, 30000);
