@@ -59,10 +59,14 @@ function showSelected(id) {
 /* ---------- rotating ---------- */
 function rotate() {
   rightBig.classList.remove("show");
-  rightImg.src = `images/${rotateIndex}.jpg`;
-  requestAnimationFrame(() => rightBig.classList.add("show"));
-  rotateIndex = rotateIndex % TOTAL + 1;
+
+  setTimeout(() => {
+    rightImg.src = `images/${rotateIndex}.jpg`;
+    rightBig.classList.add("show");
+    rotateIndex = rotateIndex % TOTAL + 1;
+  }, 150);
 }
+
 
 setInterval(rotate, 3500);
 rotate();
