@@ -41,12 +41,34 @@ h1, p {
 /* ---------- layout ---------- */
 .layout {
   display: grid;
-  grid-template-columns: 1fr 420px;
+  grid-template-columns: 520px 1fr;
   gap: 30px;
   max-width: 1600px;
   margin: auto;
 }
 
+/* ---------- focus panel ---------- */
+.focus {
+  position: relative;
+  height: 860px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.15);
+}
+
+.focus img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.focus.show img {
+  opacity: 1;
+}
+
+/* ---------- grid ---------- */
 .grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -67,19 +89,14 @@ h1, p {
   border-radius: 8px;
 }
 
-.label {
-  margin-top: 6px;
-  font-weight: bold;
-  text-align: center;
-}
-
+/* percentage bar */
 .progress {
   position: absolute;
   left: 10px;
   right: 10px;
-  bottom: 36px;
-  height: 22px;
-  border-radius: 11px;
+  bottom: 46px;
+  height: 20px;
+  border-radius: 10px;
   background: rgba(0,0,0,0.15);
   overflow: hidden;
 }
@@ -100,62 +117,32 @@ h1, p {
   font-weight: 900;
 }
 
-/* ---------- focus panel ---------- */
-.focus {
-  position: relative;
-  height: 620px;
-  border-radius: 18px;
-  overflow: hidden;
-  background: #000;
-}
-
-.focus img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 1s ease;
-}
-
-.focus.show img {
-  opacity: 1;
-}
-
-.focus::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(80,120,255,0.75),
-    transparent
-  );
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 2s linear;
-}
-
-.focus.fill::after {
-  transform: scaleX(1);
+/* label BELOW percentage */
+.label {
+  margin-top: 34px;
+  font-weight: bold;
+  text-align: center;
 }
 
 /* ---------- leaderboard ---------- */
 #leaderboard {
-  max-width: 1200px;
-  margin: 40px auto 0;
-  background: rgba(255,255,255,0.9);
-  padding: 16px;
-  border-radius: 12px;
-  font-size: 14px;
+  max-width: 420px;
+  margin: 30px auto 0;
+  background: rgba(255,255,255,0.88);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
 }
 
 #leaderboard h3 {
-  margin-top: 0;
+  margin: 0 0 6px;
+  font-size: 14px;
 }
 
 .tooltip {
-  font-size: 12px;
+  font-size: 11px;
   opacity: 0.7;
+  margin-bottom: 6px;
 }
 </style>
 </head>
@@ -170,11 +157,13 @@ h1, p {
 </div>
 
 <div class="layout">
-  <div class="grid" id="grid"></div>
-
+  <!-- LEFT: rotating focus -->
   <div class="focus" id="focus">
     <img id="focusImg" src="">
   </div>
+
+  <!-- RIGHT: grid -->
+  <div class="grid" id="grid"></div>
 </div>
 
 <div id="leaderboard">
