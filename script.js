@@ -38,9 +38,9 @@ for (let i = 1; i <= TOTAL; i++) {
     <div class="label">Character ${i}</div>
   `;
 
-  card.addEventListener("click", () => {
-    vote(i);
+  card.addEventListener("click", async () => {
     showSelected(i);
+    await vote(i);
   });
 
   grid.appendChild(card);
@@ -71,27 +71,41 @@ function rotate() {
 setInterval(rotate, 3000);
 rotate();
 
-/* ---------- voting ---------- */
+/* ---------- voting (FIXED) ---------- */
 async function vote(optionId) {
-  await fetch(
-    `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`,
-    {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: "Bearer " + SUPABASE_KEY,
-        "Content-Type": "application/json",
-        Prefer: "resolution=merge-duplicates"
-      },
-      body: JSON.stringify({
-        poll_id: POLL_ID,
-        option_id: optionId,
-        voter_hash: voterHash
-      })
-    }
-  );
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`,
+      {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: "Bearer " + SUPABASE_KEY,
+          "Content-Type": "application/json",
+          Prefer: "resolution=merge-duplicates,return=minimal"
+        },
+        body: JSON.stringify({
+          poll_id: POLL_ID,
+          option_id: optionId,
+          voter_hash: voterHash
+        })
+      }
+    );
 
-  fetchResults();
+    if (!res.ok) {
+      const t = await res.text();
+      console.error("Vote failed:", t);
+      debug.textContent = "Vote error (see console)";
+      return;
+    }
+
+    await fetchResults();
+    await fetchLeaderboard();
+  } catch (err) {
+    console.error(err);
+    debug.textContent = "Network error";
+  }
 }
 
 /* ---------- votes ---------- */
@@ -99,6 +113,7 @@ async function fetchResults() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
     {
+      cache: "no-store",
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: "Bearer " + SUPABASE_KEY
@@ -128,6 +143,7 @@ async function fetchLeaderboard() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&order=score.desc`,
     {
+      cache: "no-store",
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: "Bearer " + SUPABASE_KEY
