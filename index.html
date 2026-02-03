@@ -24,9 +24,7 @@ body {
   background-repeat: repeat;
 }
 
-h1, p {
-  text-align: center;
-}
+h1, p { text-align: center; }
 
 #debug {
   text-align: center;
@@ -41,30 +39,32 @@ h1, p {
 /* ---------- layout ---------- */
 .layout {
   display: grid;
-  grid-template-columns: 520px 1fr;
-  gap: 30px;
-  max-width: 1600px;
+  grid-template-columns: 420px 1fr 420px;
+  gap: 24px;
+  max-width: 1800px;
   margin: auto;
 }
 
-/* ---------- focus panel ---------- */
-.focus {
-  position: relative;
+/* ---------- panels ---------- */
+.panel {
   height: 860px;
-  border-radius: 20px;
+  border-radius: 18px;
   overflow: hidden;
   background: rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.focus img {
-  width: 100%;
-  height: 100%;
+.panel img {
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   opacity: 0;
-  transition: opacity 1.2s ease;
+  transition: opacity 0.8s ease;
 }
 
-.focus.show img {
+.panel.show img {
   opacity: 1;
 }
 
@@ -89,13 +89,12 @@ h1, p {
   border-radius: 8px;
 }
 
-/* percentage bar */
 .progress {
   position: absolute;
   left: 10px;
   right: 10px;
   bottom: 46px;
-  height: 20px;
+  height: 18px;
   border-radius: 10px;
   background: rgba(0,0,0,0.15);
   overflow: hidden;
@@ -117,7 +116,6 @@ h1, p {
   font-weight: 900;
 }
 
-/* label BELOW percentage */
 .label {
   margin-top: 34px;
   font-weight: bold;
@@ -126,7 +124,7 @@ h1, p {
 
 /* ---------- leaderboard ---------- */
 #leaderboard {
-  max-width: 420px;
+  max-width: 360px;
   margin: 30px auto 0;
   background: rgba(255,255,255,0.88);
   padding: 10px 14px;
@@ -157,13 +155,20 @@ h1, p {
 </div>
 
 <div class="layout">
-  <!-- LEFT: rotating focus -->
-  <div class="focus" id="focus">
-    <img id="focusImg" src="">
+
+  <!-- STATIC SELECTED -->
+  <div class="panel" id="selectedPanel">
+    <img id="selectedImg">
   </div>
 
-  <!-- RIGHT: grid -->
+  <!-- GRID -->
   <div class="grid" id="grid"></div>
+
+  <!-- ROTATING -->
+  <div class="panel" id="rotatePanel">
+    <img id="rotateImg">
+  </div>
+
 </div>
 
 <div id="leaderboard">
