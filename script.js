@@ -66,20 +66,19 @@ async function vote(optionId) {
   fetchResults();
 }
 
-/* ---------- focus animation ---------- */
+/* ---------- focus rotation ---------- */
 function showFocus(id) {
   clearTimeout(focusTimer);
 
-  focus.classList.remove("show", "fill");
+  focus.classList.remove("show");
   focusImg.src = `images/${id}.jpg`;
 
   requestAnimationFrame(() => {
     focus.classList.add("show");
-    focus.classList.add("fill");
   });
 
   currentFocus = id;
-  focusTimer = setTimeout(autoRotate, 2800);
+  focusTimer = setTimeout(autoRotate, 2600);
 }
 
 function autoRotate() {
@@ -87,7 +86,7 @@ function autoRotate() {
   showFocus(next);
 }
 
-/* ---------- results from votes table ---------- */
+/* ---------- website votes ---------- */
 async function fetchResults() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
@@ -116,7 +115,7 @@ async function fetchResults() {
   });
 }
 
-/* ---------- leaderboard (poll_result) ---------- */
+/* ---------- leaderboard (discord + website) ---------- */
 async function fetchLeaderboard() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&order=score.desc`,
