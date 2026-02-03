@@ -16,7 +16,6 @@ body {
 
 h1, p { text-align: center; }
 
-/* ---------- layout ---------- */
 .page {
   position: relative;
   max-width: 1600px;
@@ -28,24 +27,15 @@ h1, p { text-align: center; }
   z-index: 5;
 }
 
-/* ---------- BIG CARDS ---------- */
+/* ---------- BIG CARDS (NO FRAME) ---------- */
 .big-card {
   position: absolute;
   top: -80px;
   width: 700px;
   height: 1100px;
   border-radius: 24px;
-  background: black;
-  padding: 6px;
   overflow: hidden;
   pointer-events: none;
-}
-
-.big-card-inner {
-  width: 100%;
-  height: 100%;
-  border-radius: 18px;
-  overflow: hidden;
 }
 
 #leftBig { left: -760px; }
@@ -124,7 +114,7 @@ h1, p { text-align: center; }
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: 24px;
+  gap: 28px;
   margin-top: 20px;
 }
 
@@ -147,9 +137,9 @@ h1, p { text-align: center; }
   margin-bottom: 6px;
 }
 
-/* ---------- ICON BUTTONS ---------- */
+/* ---------- ICON BUTTONS (2× AGAIN) ---------- */
 .icon-link img {
-  width: 140px; /* 2× size */
+  width: 280px;
   transition: transform 0.25s ease;
 }
 
@@ -175,15 +165,11 @@ h1, p { text-align: center; }
 <div class="page">
 
   <div class="big-card" id="leftBig">
-    <div class="big-card-inner">
-      <img id="leftImg">
-    </div>
+    <img id="leftImg">
   </div>
 
   <div class="big-card" id="rightBig">
-    <div class="big-card-inner">
-      <img id="rightImg">
-    </div>
+    <img id="rightImg">
   </div>
 
   <div class="center">
