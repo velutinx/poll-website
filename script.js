@@ -6,6 +6,7 @@ const TOTAL = 12;
 
 const grid = document.getElementById("grid");
 const debug = document.getElementById("debug");
+const combinedBox = document.getElementById("combined-results");
 
 /* ---------- voter hash (1 per browser) ---------- */
 let voterHash = localStorage.getItem("voter_hash");
@@ -30,7 +31,7 @@ for (let i = 1; i <= TOTAL; i++) {
   grid.appendChild(card);
 }
 
-/* ---------- UPSERT vote (THIS IS THE FIX) ---------- */
+/* ---------- vote (UPSERT) ---------- */
 async function vote(optionId) {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`,
@@ -52,17 +53,16 @@ async function vote(optionId) {
   );
 
   if (!res.ok) {
-    const err = await res.text();
     debug.textContent = "Vote failed";
-    console.error(err);
+    console.error(await res.text());
     return;
   }
 
-  fetchResults();
+  fetchWebsiteResults();
 }
 
-/* ---------- fetch + render results ---------- */
-async function fetchResults() {
+/* ---------- website-only results ---------- */
+async function fetchWebsiteResults() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
     {
@@ -76,7 +76,7 @@ async function fetchResults() {
   const votes = await res.json();
   const totalVotes = votes.length;
 
-  debug.textContent = `Total votes: ${totalVotes}`;
+  debug.textContent = `Total website votes: ${totalVotes}`;
 
   const counts = {};
   for (let i = 1; i <= TOTAL; i++) counts[i] = 0;
@@ -91,6 +91,34 @@ async function fetchResults() {
   });
 }
 
-/* ---------- initial load + refresh ---------- */
-fetchResults();
-setInterval(fetchResults, 3000);
+/* ---------- combined results (Discord + website) ---------- */
+async function fetchCombinedResults() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&select=option_id,score&order=option_id.asc`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY
+      }
+    }
+  );
+
+  const rows = await res.json();
+
+  if (!rows.length) {
+    combinedBox.textContent = "No combined results yet";
+    return;
+  }
+
+  combinedBox.innerHTML = rows
+    .map(r => `Character ${r.option_id} — ${r.score.toFixed(1)}`)
+    .join("<br>");
+}
+
+/* ---------- initial load ---------- */
+fetchWebsiteResults();
+fetchCombinedResults();
+
+/* ---------- refresh intervals ---------- */
+setInterval(fetchWebsiteResults, 3000);     // website UX
+setInterval(fetchCombinedResults, 30000);   // Discord-aligned
