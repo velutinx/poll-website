@@ -15,14 +15,14 @@ const rightBig = document.getElementById("rightBig");
 
 let rotateIndex = 1;
 
-/* voter id */
+/* ---------- voter id ---------- */
 let voterHash = localStorage.getItem("voter_hash");
 if (!voterHash) {
   voterHash = crypto.randomUUID();
   localStorage.setItem("voter_hash", voterHash);
 }
 
-/* build cards */
+/* ---------- build cards ---------- */
 for (let i = 1; i <= TOTAL; i++) {
   const card = document.createElement("div");
   card.className = "card";
@@ -45,14 +45,14 @@ for (let i = 1; i <= TOTAL; i++) {
   grid.appendChild(card);
 }
 
-/* static selected */
+/* ---------- selected (static) ---------- */
 function showSelected(id) {
   leftBig.classList.remove("show");
   leftImg.src = `images/${id}.jpg`;
   requestAnimationFrame(() => leftBig.classList.add("show"));
 }
 
-/* rotating */
+/* ---------- rotating ---------- */
 function rotate() {
   rightBig.classList.remove("show");
   rightImg.src = `images/${rotateIndex}.jpg`;
@@ -64,7 +64,7 @@ setInterval(rotate, 3500);
 rotate();
 showSelected(1);
 
-/* vote */
+/* ---------- VOTE (FIXED) ---------- */
 async function vote(optionId) {
   await fetch(
     `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`,
@@ -80,7 +80,8 @@ async function vote(optionId) {
       body: JSON.stringify({
         poll_id: POLL_ID,
         option_id: optionId,
-        voter_hash: voterHash
+        voter_hash: voterHash,
+        source: "website"   // ✅ THIS WAS THE MISSING PIECE
       })
     }
   );
@@ -89,7 +90,7 @@ async function vote(optionId) {
   fetchLeaderboard();
 }
 
-/* results */
+/* ---------- grid results ---------- */
 async function fetchResults() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
@@ -117,7 +118,7 @@ async function fetchResults() {
   });
 }
 
-/* leaderboard */
+/* ---------- leaderboard ---------- */
 async function fetchLeaderboard() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&order=score.desc`,
