@@ -9,11 +9,11 @@ const resultsBox = document.getElementById("results");
 
 const leftImg = document.getElementById("leftImg");
 const leftBig = document.getElementById("leftBig");
-
 const rightImg = document.getElementById("rightImg");
 const rightBig = document.getElementById("rightBig");
 
 let rotateIndex = 1;
+let characterNames = {};
 
 /* ---------- voter id ---------- */
 let voterHash = localStorage.getItem("voter_hash");
@@ -22,37 +22,58 @@ if (!voterHash) {
   localStorage.setItem("voter_hash", voterHash);
 }
 
-/* ---------- build cards ---------- */
-for (let i = 1; i <= TOTAL; i++) {
-  const card = document.createElement("div");
-  card.className = "card";
-  card.dataset.id = i;
+/* ---------- load names ---------- */
+async function fetchNames() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&select=option_id,character_name`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY
+      }
+    }
+  );
 
-  card.innerHTML = `
-    <img src="images/${i}.jpg">
-    <div class="progress">
-      <div class="progress-fill"></div>
-      <div class="progress-text">0%</div>
-    </div>
-    <div class="label">Character ${i}</div>
-  `;
-
-  card.onclick = async () => {
-    showSelected(i);
-    await vote(i);
-  };
-
-  grid.appendChild(card);
+  const rows = await res.json();
+  rows.forEach(r => {
+    characterNames[r.option_id] = r.character_name;
+  });
 }
 
-/* ---------- selected ---------- */
+/* ---------- build cards ---------- */
+async function buildCards() {
+  await fetchNames();
+
+  for (let i = 1; i <= TOTAL; i++) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.id = i;
+
+    card.innerHTML = `
+      <img src="images/${i}.jpg">
+      <div class="progress">
+        <div class="progress-fill"></div>
+        <div class="progress-text">0%</div>
+      </div>
+      <div class="label">${characterNames[i] ?? `Character ${i}`}</div>
+    `;
+
+    card.onclick = async () => {
+      showSelected(i);
+      await vote(i);
+    };
+
+    grid.appendChild(card);
+  }
+}
+
+/* ---------- big cards ---------- */
 function showSelected(id) {
   leftBig.classList.remove("show");
   leftImg.src = `images/${id}.jpg`;
   requestAnimationFrame(() => leftBig.classList.add("show"));
 }
 
-/* ---------- rotating ---------- */
 function rotate() {
   rightBig.classList.remove("show");
   rightImg.src = `images/${rotateIndex}.jpg`;
@@ -60,17 +81,12 @@ function rotate() {
   rotateIndex = rotateIndex % TOTAL + 1;
 }
 
-setInterval(rotate, 3500);
-rotate();
-showSelected(1);
-
 /* ---------- vote ---------- */
 async function vote(optionId) {
   await fetch(
     `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`,
     {
       method: "POST",
-      cache: "no-store",
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: "Bearer " + SUPABASE_KEY,
@@ -95,7 +111,6 @@ async function fetchResults() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
     {
-      cache: "no-store",
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: "Bearer " + SUPABASE_KEY
@@ -123,7 +138,6 @@ async function fetchLeaderboard() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&order=score.desc`,
     {
-      cache: "no-store",
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: "Bearer " + SUPABASE_KEY
@@ -133,10 +147,16 @@ async function fetchLeaderboard() {
 
   const rows = await res.json();
   resultsBox.innerHTML = rows
-    .map(r => `Character ${r.option_id}: ${r.score.toFixed(1)}`)
+    .map(r => `${r.character_name}: ${r.score.toFixed(1)}`)
     .join("<br>");
 }
 
+/* ---------- init ---------- */
+await buildCards();
+rotate();
+showSelected(1);
+
+setInterval(rotate, 3500);
 fetchResults();
 fetchLeaderboard();
 setInterval(fetchResults, 30000);
