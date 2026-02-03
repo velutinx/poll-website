@@ -16,7 +16,7 @@ body {
 
 h1, p { text-align: center; }
 
-/* ---------- containers ---------- */
+/* ---------- layout ---------- */
 .page {
   position: relative;
   max-width: 1600px;
@@ -28,16 +28,16 @@ h1, p { text-align: center; }
   z-index: 5;
 }
 
-/* ---------- BIG CARDS (isolated) ---------- */
+/* ---------- BIG CARDS ---------- */
 .big-card {
   position: absolute;
-  top: 120px;
+  top: -180px; /* ⬅ moved north by ~300px */
   width: 700px;
   height: 1100px;
   border-radius: 24px;
   background: rgba(0,0,0,0.12);
   overflow: hidden;
-  pointer-events: none; /* IMPORTANT */
+  pointer-events: none;
 }
 
 #leftBig { left: -760px; }
@@ -77,14 +77,14 @@ h1, p { text-align: center; }
   border-radius: 8px;
 }
 
-/* progress */
+/* progress bar */
 .progress {
   position: absolute;
   left: 8px;
   right: 8px;
-  bottom: 30px;
-  height: 16px;
-  border-radius: 8px;
+  bottom: 26px;
+  height: 14px;
+  border-radius: 7px;
   background: rgba(0,0,0,0.15);
   overflow: hidden;
 }
@@ -107,7 +107,7 @@ h1, p { text-align: center; }
 }
 
 .label {
-  margin-top: 18px;
+  margin-top: 14px;
   text-align: center;
   font-size: 13px;
   font-weight: bold;
@@ -115,16 +115,16 @@ h1, p { text-align: center; }
 
 /* ---------- LEADERBOARD ---------- */
 #leaderboard {
-  max-width: 300px;
-  margin: 20px auto 0;
+  max-width: 260px;
+  margin: 16px auto 0;
   background: rgba(255,255,255,0.9);
-  padding: 8px 12px;
+  padding: 8px 10px;
   border-radius: 10px;
   font-size: 12px;
 }
 
 #leaderboard h3 {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   font-size: 14px;
 }
 
@@ -143,17 +143,14 @@ h1, p { text-align: center; }
 
 <div class="page">
 
-  <!-- LEFT STATIC -->
   <div class="big-card" id="leftBig">
     <img id="leftImg">
   </div>
 
-  <!-- RIGHT ROTATING -->
   <div class="big-card" id="rightBig">
     <img id="rightImg">
   </div>
 
-  <!-- CENTER GRID -->
   <div class="center">
     <div class="grid" id="grid"></div>
 
