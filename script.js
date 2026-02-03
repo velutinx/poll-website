@@ -5,25 +5,24 @@ const POLL_ID = "character_poll_1";
 const TOTAL = 12;
 
 const grid = document.getElementById("grid");
-const debug = document.getElementById("debug");
 const resultsBox = document.getElementById("results");
 
-const selectedPanel = document.getElementById("selectedPanel");
-const selectedImg = document.getElementById("selectedImg");
+const leftImg = document.getElementById("leftImg");
+const leftBig = document.getElementById("leftBig");
 
-const rotatePanel = document.getElementById("rotatePanel");
-const rotateImg = document.getElementById("rotateImg");
+const rightImg = document.getElementById("rightImg");
+const rightBig = document.getElementById("rightBig");
 
 let rotateIndex = 1;
 
-/* ---------- voter hash ---------- */
+/* voter id */
 let voterHash = localStorage.getItem("voter_hash");
 if (!voterHash) {
   voterHash = crypto.randomUUID();
   localStorage.setItem("voter_hash", voterHash);
 }
 
-/* ---------- build cards ---------- */
+/* build cards */
 for (let i = 1; i <= TOTAL; i++) {
   const card = document.createElement("div");
   card.className = "card";
@@ -38,77 +37,59 @@ for (let i = 1; i <= TOTAL; i++) {
     <div class="label">Character ${i}</div>
   `;
 
-  card.addEventListener("click", async () => {
+  card.onclick = async () => {
     showSelected(i);
     await vote(i);
-  });
+  };
 
   grid.appendChild(card);
 }
 
-/* ---------- static selected ---------- */
+/* static selected */
 function showSelected(id) {
-  selectedPanel.classList.remove("show");
-  selectedImg.src = `images/${id}.jpg`;
-
-  requestAnimationFrame(() => {
-    selectedPanel.classList.add("show");
-  });
+  leftBig.classList.remove("show");
+  leftImg.src = `images/${id}.jpg`;
+  requestAnimationFrame(() => leftBig.classList.add("show"));
 }
 
-/* ---------- rotating panel ---------- */
+/* rotating */
 function rotate() {
-  rotatePanel.classList.remove("show");
-  rotateImg.src = `images/${rotateIndex}.jpg`;
-
-  requestAnimationFrame(() => {
-    rotatePanel.classList.add("show");
-  });
-
+  rightBig.classList.remove("show");
+  rightImg.src = `images/${rotateIndex}.jpg`;
+  requestAnimationFrame(() => rightBig.classList.add("show"));
   rotateIndex = rotateIndex % TOTAL + 1;
 }
 
-setInterval(rotate, 3000);
+setInterval(rotate, 3500);
 rotate();
+showSelected(1);
 
-/* ---------- voting (FIXED) ---------- */
+/* vote */
 async function vote(optionId) {
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`,
-      {
-        method: "POST",
-        cache: "no-store",
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: "Bearer " + SUPABASE_KEY,
-          "Content-Type": "application/json",
-          Prefer: "resolution=merge-duplicates,return=minimal"
-        },
-        body: JSON.stringify({
-          poll_id: POLL_ID,
-          option_id: optionId,
-          voter_hash: voterHash
-        })
-      }
-    );
-
-    if (!res.ok) {
-      const t = await res.text();
-      console.error("Vote failed:", t);
-      debug.textContent = "Vote error (see console)";
-      return;
+  await fetch(
+    `${SUPABASE_URL}/rest/v1/votes?on_conflict=poll_id,voter_hash`,
+    {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal"
+      },
+      body: JSON.stringify({
+        poll_id: POLL_ID,
+        option_id: optionId,
+        voter_hash: voterHash
+      })
     }
+  );
 
-    await fetchResults();
-    await fetchLeaderboard();
-  } catch (err) {
-    console.error(err);
-    debug.textContent = "Network error";
-  }
+  fetchResults();
+  fetchLeaderboard();
 }
 
-/* ---------- votes ---------- */
+/* results */
 async function fetchResults() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
@@ -122,8 +103,6 @@ async function fetchResults() {
   );
 
   const votes = await res.json();
-  debug.textContent = `Total votes: ${votes.length}`;
-
   const counts = {};
   for (let i = 1; i <= TOTAL; i++) counts[i] = 0;
   votes.forEach(v => counts[v.option_id]++);
@@ -138,7 +117,7 @@ async function fetchResults() {
   });
 }
 
-/* ---------- leaderboard ---------- */
+/* leaderboard */
 async function fetchLeaderboard() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&order=score.desc`,
@@ -157,10 +136,7 @@ async function fetchLeaderboard() {
     .join("<br>");
 }
 
-/* ---------- init ---------- */
 fetchResults();
 fetchLeaderboard();
-showSelected(1);
-
 setInterval(fetchResults, 30000);
 setInterval(fetchLeaderboard, 30000);
