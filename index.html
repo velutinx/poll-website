@@ -18,43 +18,18 @@ content="
 body {
   margin: 0;
   padding: 30px;
-  text-align: center;
   font-family: Arial, sans-serif;
   background-image: url("background.jpg");
   background-size: 512px 768px;
   background-repeat: repeat;
-  position: relative;
-  overflow-x: hidden;
 }
 
-/* ---------- subtle animated light sweep ---------- */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    120deg,
-    rgba(255,255,255,0.06),
-    rgba(255,200,240,0.10),
-    rgba(200,220,255,0.08),
-    rgba(255,255,255,0.06)
-  );
-  animation: sweep 60s linear infinite;
-  z-index: 0;
-}
-
-@keyframes sweep {
-  from { background-position: 0% 50%; }
-  to   { background-position: 200% 50%; }
-}
-
-h1, p, #debug {
-  position: relative;
-  z-index: 1;
+h1, p {
+  text-align: center;
 }
 
 #debug {
+  text-align: center;
   margin-bottom: 15px;
   font-weight: bold;
   background: rgba(255,255,255,0.85);
@@ -63,57 +38,56 @@ h1, p, #debug {
   border-radius: 6px;
 }
 
+/* ---------- layout ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 30px;
+  max-width: 1600px;
+  margin: auto;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 20px;
-  max-width: 1200px;
-  margin: auto;
-  position: relative;
-  z-index: 1;
 }
 
+/* ---------- cards ---------- */
 .card {
   position: relative;
   background: rgba(245,241,223,0.95);
   border-radius: 12px;
   padding: 10px;
   cursor: pointer;
-  overflow: hidden;
 }
 
 .card img {
   width: 100%;
   border-radius: 8px;
-  display: block;
 }
 
 .label {
   margin-top: 6px;
   font-weight: bold;
+  text-align: center;
 }
 
-/* ---------- progress ribbon overlay ---------- */
 .progress {
   position: absolute;
   left: 10px;
   right: 10px;
   bottom: 36px;
-  height: 26px;
-  border-radius: 13px;
+  height: 22px;
+  border-radius: 11px;
   background: rgba(0,0,0,0.15);
   overflow: hidden;
-  pointer-events: none;
 }
 
 .progress-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(
-    90deg,
-    rgba(90,140,255,0.9),
-    rgba(140,180,255,0.9)
-  );
+  background: linear-gradient(90deg,#5a8cff,#8fb6ff);
   transition: width 0.4s ease;
 }
 
@@ -124,7 +98,64 @@ h1, p, #debug {
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  color: black;
+}
+
+/* ---------- focus panel ---------- */
+.focus {
+  position: relative;
+  height: 620px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+}
+
+.focus img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.focus.show img {
+  opacity: 1;
+}
+
+.focus::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(80,120,255,0.75),
+    transparent
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 2s linear;
+}
+
+.focus.fill::after {
+  transform: scaleX(1);
+}
+
+/* ---------- leaderboard ---------- */
+#leaderboard {
+  max-width: 1200px;
+  margin: 40px auto 0;
+  background: rgba(255,255,255,0.9);
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+#leaderboard h3 {
+  margin-top: 0;
+}
+
+.tooltip {
+  font-size: 12px;
+  opacity: 0.7;
 }
 </style>
 </head>
@@ -134,8 +165,23 @@ h1, p, #debug {
 <h1>Vote for Your Favorite Character</h1>
 <p>Click once — you can change your vote anytime</p>
 
-<div id="debug">Loading…</div>
-<div class="grid" id="grid"></div>
+<div style="text-align:center">
+  <div id="debug">Loading…</div>
+</div>
+
+<div class="layout">
+  <div class="grid" id="grid"></div>
+
+  <div class="focus" id="focus">
+    <img id="focusImg" src="">
+  </div>
+</div>
+
+<div id="leaderboard">
+  <h3>Leaderboard</h3>
+  <div class="tooltip">Includes Discord + Website votes</div>
+  <div id="results">Loading…</div>
+</div>
 
 <script type="module" src="./script.js"></script>
 </body>
