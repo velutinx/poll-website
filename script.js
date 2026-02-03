@@ -6,12 +6,15 @@ const TOTAL = 12;
 
 const grid = document.getElementById("grid");
 const debug = document.getElementById("debug");
-const focus = document.getElementById("focus");
-const focusImg = document.getElementById("focusImg");
 const resultsBox = document.getElementById("results");
 
-let currentFocus = 1;
-let focusTimer;
+const selectedPanel = document.getElementById("selectedPanel");
+const selectedImg = document.getElementById("selectedImg");
+
+const rotatePanel = document.getElementById("rotatePanel");
+const rotateImg = document.getElementById("rotateImg");
+
+let rotateIndex = 1;
 
 /* ---------- voter hash ---------- */
 let voterHash = localStorage.getItem("voter_hash");
@@ -37,11 +40,36 @@ for (let i = 1; i <= TOTAL; i++) {
 
   card.addEventListener("click", () => {
     vote(i);
-    showFocus(i);
+    showSelected(i);
   });
 
   grid.appendChild(card);
 }
+
+/* ---------- static selected ---------- */
+function showSelected(id) {
+  selectedPanel.classList.remove("show");
+  selectedImg.src = `images/${id}.jpg`;
+
+  requestAnimationFrame(() => {
+    selectedPanel.classList.add("show");
+  });
+}
+
+/* ---------- rotating panel ---------- */
+function rotate() {
+  rotatePanel.classList.remove("show");
+  rotateImg.src = `images/${rotateIndex}.jpg`;
+
+  requestAnimationFrame(() => {
+    rotatePanel.classList.add("show");
+  });
+
+  rotateIndex = rotateIndex % TOTAL + 1;
+}
+
+setInterval(rotate, 3000);
+rotate();
 
 /* ---------- voting ---------- */
 async function vote(optionId) {
@@ -66,27 +94,7 @@ async function vote(optionId) {
   fetchResults();
 }
 
-/* ---------- focus rotation ---------- */
-function showFocus(id) {
-  clearTimeout(focusTimer);
-
-  focus.classList.remove("show");
-  focusImg.src = `images/${id}.jpg`;
-
-  requestAnimationFrame(() => {
-    focus.classList.add("show");
-  });
-
-  currentFocus = id;
-  focusTimer = setTimeout(autoRotate, 2600);
-}
-
-function autoRotate() {
-  const next = currentFocus % TOTAL + 1;
-  showFocus(next);
-}
-
-/* ---------- website votes ---------- */
+/* ---------- votes ---------- */
 async function fetchResults() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
@@ -115,7 +123,7 @@ async function fetchResults() {
   });
 }
 
-/* ---------- leaderboard (discord + website) ---------- */
+/* ---------- leaderboard ---------- */
 async function fetchLeaderboard() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&order=score.desc`,
@@ -136,7 +144,7 @@ async function fetchLeaderboard() {
 /* ---------- init ---------- */
 fetchResults();
 fetchLeaderboard();
-showFocus(1);
+showSelected(1);
 
 setInterval(fetchResults, 30000);
 setInterval(fetchLeaderboard, 30000);
