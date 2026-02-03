@@ -2,22 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
-<meta http-equiv="Content-Security-Policy"
-content="
-  default-src 'self';
-  script-src 'self';
-  style-src 'self' 'unsafe-inline';
-  img-src 'self' data:;
-  connect-src 'self' https://uyfltjpfqbacdmoixhjg.supabase.co;
-">
-
 <title>Character Vote</title>
 
 <style>
 body {
   margin: 0;
-  padding: 30px;
+  padding: 40px;
   font-family: Arial, sans-serif;
   background-image: url("background.jpg");
   background-size: 512px 768px;
@@ -26,62 +16,60 @@ body {
 
 h1, p { text-align: center; }
 
-#debug {
-  text-align: center;
-  margin-bottom: 15px;
-  font-weight: bold;
-  background: rgba(255,255,255,0.85);
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 6px;
-}
-
-/* ---------- layout ---------- */
-.layout {
-  display: grid;
-  grid-template-columns: 700px 1fr 700px;
-  gap: 26px;
-  max-width: 2200px;
+/* ---------- containers ---------- */
+.page {
+  position: relative;
+  max-width: 1600px;
   margin: auto;
 }
 
-/* ---------- panels ---------- */
-.panel {
-  height: 1100px;
-  border-radius: 22px;
-  overflow: hidden;
-  background: rgba(0,0,0,0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.center {
+  position: relative;
+  z-index: 5;
 }
 
-.panel img {
-  max-width: 100%;
-  max-height: 100%;
+/* ---------- BIG CARDS (isolated) ---------- */
+.big-card {
+  position: absolute;
+  top: 120px;
+  width: 700px;
+  height: 1100px;
+  border-radius: 24px;
+  background: rgba(0,0,0,0.12);
+  overflow: hidden;
+  pointer-events: none; /* IMPORTANT */
+}
+
+#leftBig { left: -760px; }
+#rightBig { right: -760px; }
+
+.big-card img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   opacity: 0;
   transition: opacity 0.8s ease;
 }
 
-.panel.show img {
+.big-card.show img {
   opacity: 1;
 }
 
-/* ---------- grid ---------- */
+/* ---------- GRID ---------- */
 .grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 18px;
+  gap: 16px;
+  pointer-events: auto;
 }
 
-/* ---------- cards ---------- */
+/* ---------- CARDS ---------- */
 .card {
-  position: relative;
-  background: rgba(245,241,223,0.96);
+  background: rgba(245,241,223,0.97);
   border-radius: 12px;
   padding: 8px;
   cursor: pointer;
+  position: relative;
 }
 
 .card img {
@@ -89,14 +77,14 @@ h1, p { text-align: center; }
   border-radius: 8px;
 }
 
-/* progress bar moved UP */
+/* progress */
 .progress {
   position: absolute;
   left: 8px;
   right: 8px;
-  bottom: 32px;
-  height: 18px;
-  border-radius: 10px;
+  bottom: 30px;
+  height: 16px;
+  border-radius: 8px;
   background: rgba(0,0,0,0.15);
   overflow: hidden;
 }
@@ -114,22 +102,21 @@ h1, p { text-align: center; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  font-size: 12px;
+  font-weight: bold;
+  font-size: 11px;
 }
 
-/* name closer to bar */
 .label {
-  margin-top: 20px;
-  font-weight: bold;
+  margin-top: 18px;
   text-align: center;
   font-size: 13px;
+  font-weight: bold;
 }
 
-/* ---------- leaderboard ---------- */
+/* ---------- LEADERBOARD ---------- */
 #leaderboard {
-  max-width: 320px;
-  margin: 24px auto 0;
+  max-width: 300px;
+  margin: 20px auto 0;
   background: rgba(255,255,255,0.9);
   padding: 8px 12px;
   border-radius: 10px;
@@ -137,7 +124,7 @@ h1, p { text-align: center; }
 }
 
 #leaderboard h3 {
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   font-size: 14px;
 }
 
@@ -154,33 +141,31 @@ h1, p { text-align: center; }
 <h1>Vote for Your Favorite Character</h1>
 <p>Click once — you can change your vote anytime</p>
 
-<div style="text-align:center">
-  <div id="debug">Loading…</div>
-</div>
+<div class="page">
 
-<div class="layout">
-
-  <!-- STATIC SELECTED -->
-  <div class="panel" id="selectedPanel">
-    <img id="selectedImg">
+  <!-- LEFT STATIC -->
+  <div class="big-card" id="leftBig">
+    <img id="leftImg">
   </div>
 
-  <!-- GRID -->
-  <div class="grid" id="grid"></div>
+  <!-- RIGHT ROTATING -->
+  <div class="big-card" id="rightBig">
+    <img id="rightImg">
+  </div>
 
-  <!-- ROTATING -->
-  <div class="panel" id="rotatePanel">
-    <img id="rotateImg">
+  <!-- CENTER GRID -->
+  <div class="center">
+    <div class="grid" id="grid"></div>
+
+    <div id="leaderboard">
+      <h3>Leaderboard</h3>
+      <div class="tooltip">Includes Discord + Website votes</div>
+      <div id="results">Loading…</div>
+    </div>
   </div>
 
 </div>
 
-<div id="leaderboard">
-  <h3>Leaderboard</h3>
-  <div class="tooltip">Includes Discord + Website votes</div>
-  <div id="results">Loading…</div>
-</div>
-
-<script type="module" src="./script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
