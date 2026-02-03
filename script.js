@@ -48,9 +48,13 @@ for (let i = 1; i <= TOTAL; i++) {
 /* ---------- selected ---------- */
 function showSelected(id) {
   leftBig.classList.remove("show");
-  leftImg.src = `images/${id}.jpg`;
-  requestAnimationFrame(() => leftBig.classList.add("show"));
+
+  setTimeout(() => {
+    leftImg.src = `images/${id}.jpg`;
+    leftBig.classList.add("show");
+  }, 150); // half of 0.3s for clean crossfade
 }
+
 
 /* ---------- rotating ---------- */
 function rotate() {
