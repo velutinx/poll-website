@@ -2,42 +2,36 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
-<meta http-equiv="Content-Security-Policy"
-content="
-  default-src 'self';
-  script-src 'self';
-  style-src 'self' 'unsafe-inline';
-  img-src 'self' data:;
-  connect-src 'self' https://uyfltjpfqbacdmoixhjg.supabase.co;
-">
-
 <title>Character Vote</title>
 
 <style>
 body {
   margin: 0;
-  padding: 30px;
-  text-align: center;
+  padding: 40px;
   font-family: Arial, sans-serif;
   background-image: url("background.jpg");
   background-size: 512px 768px;
   background-repeat: repeat;
 }
 
+h1, p { text-align: center; }
+
+/* ---------- GRID ---------- */
 .grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 16px;
-  max-width: 1100px;
+  max-width: 1200px;
   margin: auto;
 }
 
+/* ---------- CARDS ---------- */
 .card {
-  background: rgba(245,241,223,0.95);
+  background: rgba(245,241,223,0.97);
   border-radius: 12px;
   padding: 8px;
   cursor: pointer;
+  position: relative;
 }
 
 .card img {
@@ -45,46 +39,69 @@ body {
   border-radius: 8px;
 }
 
+/* progress bar */
+.progress {
+  margin-top: 6px;
+  height: 14px;
+  border-radius: 7px;
+  background: rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg,#5a8cff,#8fb6ff);
+  transition: width 0.4s ease;
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  margin-top: 2px;
+}
+
 .label {
-  margin-top: 4px;
+  margin-top: 6px;
+  text-align: center;
   font-size: 13px;
   font-weight: bold;
 }
 
-.progress {
-  height: 8px;
-  background: #ddd;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: 6px;
-}
-
-.progress-bar {
-  height: 100%;
-  background: #4a7dff;
-  width: 0%;
-}
-
-.bottom-row {
+/* ---------- BOTTOM BAR ---------- */
+.bottom {
+  max-width: 1200px;
+  margin: 20px auto 0;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 40px;
-  margin-top: 30px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
 }
 
+/* ---------- LEADERBOARD ---------- */
 #leaderboard {
-  background: rgba(255,255,255,0.85);
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  text-align: left;
-  min-width: 220px;
+  background: rgba(255,255,255,0.9);
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  width: 260px;
 }
 
-/* === Discord hover animation === */
+#leaderboard h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.tooltip {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+/* ---------- DISCORD ---------- */
 .discord-link img {
-  width: 90px;
+  width: 96px;
   transition: transform 0.25s ease;
 }
 
@@ -109,14 +126,20 @@ body {
 
 <div class="grid" id="grid"></div>
 
-<div class="bottom-row">
-  <div id="leaderboard">Loading leaderboard…</div>
+<div class="bottom">
+  <div id="leaderboard">
+    <h3>Leaderboard</h3>
+    <div class="tooltip">Includes Discord + Website votes</div>
+    <div id="results">Loading…</div>
+  </div>
 
-  <a class="discord-link" href="https://discord.gg/6sHSVMEE" target="_blank">
+  <a class="discord-link"
+     href="https://discord.gg/6sHSVMEE"
+     target="_blank">
     <img src="LogoDiscord.png" alt="Discord">
   </a>
 </div>
 
-<script type="module" src="./script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
