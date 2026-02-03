@@ -23,6 +23,35 @@ body {
   background-image: url("background.jpg");
   background-size: 512px 768px;
   background-repeat: repeat;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ---------- subtle animated light sweep ---------- */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.06),
+    rgba(255,200,240,0.10),
+    rgba(200,220,255,0.08),
+    rgba(255,255,255,0.06)
+  );
+  animation: sweep 60s linear infinite;
+  z-index: 0;
+}
+
+@keyframes sweep {
+  from { background-position: 0% 50%; }
+  to   { background-position: 200% 50%; }
+}
+
+h1, p, #debug {
+  position: relative;
+  z-index: 1;
 }
 
 #debug {
@@ -40,6 +69,8 @@ body {
   gap: 20px;
   max-width: 1200px;
   margin: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .card {
@@ -48,11 +79,13 @@ body {
   border-radius: 12px;
   padding: 10px;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .card img {
   width: 100%;
   border-radius: 8px;
+  display: block;
 }
 
 .label {
@@ -60,62 +93,49 @@ body {
   font-weight: bold;
 }
 
-.overlay {
+/* ---------- progress ribbon overlay ---------- */
+.progress {
   position: absolute;
-  inset: 0;
-  background: rgba(60,120,255,0.65);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30px;
-  font-weight: 900;
-  color: black;
-  opacity: 0;
+  left: 10px;
+  right: 10px;
+  bottom: 36px;
+  height: 26px;
+  border-radius: 13px;
+  background: rgba(0,0,0,0.15);
+  overflow: hidden;
   pointer-events: none;
 }
 
-.card.show .overlay {
-  opacity: 1;
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(
+    90deg,
+    rgba(90,140,255,0.9),
+    rgba(140,180,255,0.9)
+  );
+  transition: width 0.4s ease;
 }
 
-/* ===== Combined results ===== */
-#combined-wrapper {
-  max-width: 420px;
-  margin: 40px auto;
-  background: rgba(255,255,255,0.92);
-  padding: 16px;
-  border-radius: 12px;
-  text-align: left;
-}
-
-#combined-title {
+.progress-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 900;
-  margin-bottom: 6px;
-  cursor: help;
-}
-
-#combined-results {
-  line-height: 1.6;
-  font-weight: bold;
+  color: black;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Vote for Your Favorite Cxharacter</h1>
+<h1>Vote for Your Favorite Character</h1>
 <p>Click once — you can change your vote anytime</p>
 
 <div id="debug">Loading…</div>
 <div class="grid" id="grid"></div>
-
-<div id="combined-wrapper">
-  <div id="combined-title"
-       title="Includes Discord reaction votes, role weights, boosters, and website votes">
-    📊 Combined Results
-  </div>
-  <div id="combined-results">Waiting for results…</div>
-</div>
 
 <script type="module" src="./script.js"></script>
 </body>
