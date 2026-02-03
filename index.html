@@ -25,7 +25,7 @@ h1, p { text-align: center; }
 
 .center {
   position: relative;
-  z-index: 10; /* MUST be above big cards */
+  z-index: 10;
 }
 
 /* ---------- BIG CARDS ---------- */
@@ -37,7 +37,7 @@ h1, p { text-align: center; }
   border-radius: 24px;
   background: rgba(0,0,0,0.12);
   overflow: hidden;
-  pointer-events: none; /* IMPORTANT */
+  pointer-events: none;
   z-index: 1;
 }
 
@@ -113,30 +113,45 @@ h1, p { text-align: center; }
   font-weight: bold;
 }
 
-/* ---------- LEADERBOARD ---------- */
+/* ---------- LEADERBOARD + DISCORD ROW ---------- */
+.bottom-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  margin-top: 16px;
+}
+
 #leaderboard {
-  max-width: 260px;
-  margin: 16px auto 0;
+  width: 260px;
   background: rgba(255,255,255,0.9);
   padding: 8px 10px;
   border-radius: 10px;
   font-size: 12px;
 }
 
-/* ---------- DISCORD ---------- */
-.discord-link {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
+.tooltip {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-bottom: 6px;
 }
 
+/* ---------- DISCORD BUTTON ---------- */
 .discord-link img {
-  width: 144px; /* 1.5x previous */
+  width: 150px; /* ~1.5x */
   transition: transform 0.25s ease;
 }
 
 .discord-link img:hover {
-  transform: scale(1.08);
+  animation: blobWobble 1.6s ease-in-out infinite;
+}
+
+@keyframes blobWobble {
+  0%   { transform: scale(1.15) rotate(0deg); }
+  25%  { transform: scale(1.15) rotate(-4deg); }
+  50%  { transform: scale(1.15) rotate(4deg); }
+  75%  { transform: scale(1.15) rotate(-3deg); }
+  100% { transform: scale(1.15) rotate(0deg); }
 }
 </style>
 </head>
@@ -148,26 +163,21 @@ h1, p { text-align: center; }
 
 <div class="page">
 
-  <div class="big-card" id="leftBig">
-    <img id="leftImg">
-  </div>
-
-  <div class="big-card" id="rightBig">
-    <img id="rightImg">
-  </div>
+  <div class="big-card" id="leftBig"><img id="leftImg"></div>
+  <div class="big-card" id="rightBig"><img id="rightImg"></div>
 
   <div class="center">
     <div class="grid" id="grid"></div>
 
-    <div id="leaderboard">
-      <h3>Leaderboard</h3>
-      <div class="tooltip">Includes Discord + Website votes</div>
-      <div id="results">Loading…</div>
-    </div>
+    <div class="bottom-row">
+      <div id="leaderboard">
+        <h3>Leaderboard</h3>
+        <div class="tooltip">Includes Discord + Website votes</div>
+        <div id="results">Loading…</div>
+      </div>
 
-    <div class="discord-link">
-      <a href="https://discord.gg/6sHSVMEE" target="_blank">
-        <img src="LogoDiscord.png">
+      <a class="discord-link" href="https://discord.gg/6sHSVMEE" target="_blank">
+        <img src="LogoDiscord.png" alt="Join Discord">
       </a>
     </div>
   </div>
