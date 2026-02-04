@@ -137,7 +137,13 @@ h1, p { text-align: center; }
   margin-bottom: 6px;
 }
 
-/* ---------- ICON BUTTONS (2× AGAIN) ---------- */
+/* ---------- ICON BUTTONS ---------- */
+.icon-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .icon-link img {
   width: 280px;
   transition: transform 0.25s ease;
@@ -145,6 +151,13 @@ h1, p { text-align: center; }
 
 .icon-link img:hover {
   animation: blobWobble 1.6s ease-in-out infinite;
+}
+
+.discord-disclaimer {
+  margin-top: 6px;
+  font-size: 11px;
+  opacity: 0.7;
+  text-align: center;
 }
 
 @keyframes blobWobble {
@@ -177,9 +190,11 @@ h1, p { text-align: center; }
 
     <div class="bottom">
       <!-- Website -->
-      <a class="icon-link" href="https://velutinx.neocities.org/" target="_blank">
-        <img src="LogoWebsite.png">
-      </a>
+      <div class="icon-wrapper">
+        <a class="icon-link" href="https://velutinx.neocities.org/" target="_blank">
+          <img src="LogoWebsite.png">
+        </a>
+      </div>
 
       <!-- Leaderboard -->
       <div id="leaderboard">
@@ -189,9 +204,14 @@ h1, p { text-align: center; }
       </div>
 
       <!-- Discord -->
-      <a class="icon-link" href="https://discord.gg/6sHSVMEE" target="_blank">
-        <img src="LogoDiscord.png">
-      </a>
+      <div class="icon-wrapper">
+        <a class="icon-link" href="https://discord.gg/6sHSVMEE" target="_blank">
+          <img src="LogoDiscord.png">
+        </a>
+        <div class="discord-disclaimer">
+          Join discord for an extra vote!
+        </div>
+      </div>
     </div>
   </div>
 
