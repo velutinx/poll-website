@@ -175,10 +175,13 @@ h1, p { text-align: center; }
 }
 
 .leaderboard-entry.spoiled {
-  filter: blur(4px) brightness(0.6);
-  text-decoration: line-through;
-  color: #555;
-  pointer-events: auto; /* allow hover even when spoiled */
+  filter: blur(4px);
+  pointer-events: auto;
+}
+
+.leaderboard-entry.spoiled:hover {
+  filter: blur(0);
+  transition: filter 0.8s ease;
 }
 
 .leaderboard-entry.spoiled:hover {
