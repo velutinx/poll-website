@@ -191,7 +191,39 @@ h1, p { text-align: center; }
   transform: scale(1.02); /* optional small lift effect */
   transition: all 0.8s ease; /* slower reveal on hover */
 }
-  
+/* Wobble / jelly effect - continuous for big cards, hover for small */
+@keyframes wobble {
+  0% { transform: scale(1) rotate(0deg); }
+  15% { transform: scale(1.05) rotate(-2deg); }
+  30% { transform: scale(1.05) rotate(2deg); }
+  45% { transform: scale(1.03) rotate(-1.5deg); }
+  60% { transform: scale(1.03) rotate(1.5deg); }
+  75% { transform: scale(1.02) rotate(-1deg); }
+  90% { transform: scale(1.02) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Apply to big cards - always wobbling */
+.big-card {
+  animation: wobble 3.2s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+/* Apply to small cards - only on hover */
+.card {
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  animation: wobble 2.8s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+/* Optional: make hover feel more responsive */
+.card:hover {
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* subtle lift */
+}
 </style>
 </head>
 
