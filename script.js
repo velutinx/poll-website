@@ -52,7 +52,7 @@ function showSelected(id) {
   setTimeout(() => {
     leftImg.src = `images/${id}.jpg`;
     leftBig.classList.add("show");
-  }, 150); // half of 0.3s for clean crossfade
+  }, 150);
 }
 
 /* ---------- rotating ---------- */
@@ -118,9 +118,9 @@ async function fetchResults() {
   });
 }
 
-/* ---------- leaderboard with spoiler effect for selected winners ---------- */
+/* ---------- leaderboard with hover-reveal spoiler effect ---------- */
 async function fetchLeaderboard() {
-  // Fetch vote results (for scores)
+  // Fetch vote results (scores + names)
   const voteRes = await fetch(
     `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&order=score.desc`,
     { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } }
@@ -139,28 +139,22 @@ async function fetchLeaderboard() {
     winners.filter(r => r.selected_at !== null).map(r => r.option_id)
   );
 
-  // Build leaderboard HTML
+  // Build leaderboard with hover effect
   let leaderboardHTML = "";
 
   rows.forEach(r => {
     const isSpoiled = spoiledOptions.has(r.option_id);
-    let style = "";
 
-    if (isSpoiled) {
-      style = `
-        filter: blur(4px) brightness(0.6);
-        text-decoration: line-through;
-        color: #555;
-        pointer-events: none;
-      `;
-    }
-
-    leaderboardHTML += `<div style="${style}">${r.character_name}: ${r.score.toFixed(1)}</div>`;
+    leaderboardHTML += `
+      <div class="leaderboard-entry ${isSpoiled ? 'spoiled' : ''}">
+        ${r.character_name}: ${r.score.toFixed(1)}
+      </div>
+    `;
   });
 
   resultsBox.innerHTML = leaderboardHTML || "Loading…";
 
-  // Also update card labels (unchanged)
+  // Update card labels (unchanged)
   document.querySelectorAll(".card").forEach(card => {
     const id = Number(card.dataset.id);
     const row = rows.find(r => r.option_id === id);
@@ -168,6 +162,7 @@ async function fetchLeaderboard() {
   });
 }
 
+/* ---------- load data ---------- */
 fetchResults();
 fetchLeaderboard();
 setInterval(fetchResults, 30000);
