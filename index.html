@@ -167,6 +167,28 @@ h1, p { text-align: center; }
   75%  { transform: scale(1.15) rotate(-3deg); }
   100% { transform: scale(1.15) rotate(0deg); }
 }
+
+  /* Leaderboard entry with hover reveal for spoiled items */
+.leaderboard-entry {
+  transition: all 0.4s ease;
+  padding: 3px 0;
+}
+
+.leaderboard-entry.spoiled {
+  filter: blur(4px) brightness(0.6);
+  text-decoration: line-through;
+  color: #555;
+  pointer-events: auto; /* allow hover even when spoiled */
+}
+
+.leaderboard-entry.spoiled:hover {
+  filter: blur(0) brightness(1);
+  text-decoration: none;
+  color: inherit;
+  transform: scale(1.02); /* optional small lift effect */
+  transition: all 0.8s ease; /* slower reveal on hover */
+}
+  
 </style>
 </head>
 
