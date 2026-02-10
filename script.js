@@ -55,7 +55,6 @@ function showSelected(id) {
   }, 150); // half of 0.3s for clean crossfade
 }
 
-
 /* ---------- rotating ---------- */
 function rotate() {
   rightBig.classList.remove("show");
@@ -66,7 +65,6 @@ function rotate() {
     rotateIndex = rotateIndex % TOTAL + 1;
   }, 150);
 }
-
 
 setInterval(rotate, 3500);
 rotate();
@@ -97,7 +95,7 @@ async function vote(optionId) {
   fetchLeaderboard();
 }
 
-/* ---------- grid ---------- */
+/* ---------- grid / votes ---------- */
 async function fetchResults() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/votes?poll_id=eq.${POLL_ID}&select=option_id`,
@@ -120,18 +118,49 @@ async function fetchResults() {
   });
 }
 
-/* ---------- leaderboard ---------- */
+/* ---------- leaderboard with spoiler effect for selected winners ---------- */
 async function fetchLeaderboard() {
-  const res = await fetch(
+  // Fetch vote results (for scores)
+  const voteRes = await fetch(
     `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&order=score.desc`,
     { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } }
   );
 
-  const rows = await res.json();
-  resultsBox.innerHTML = rows
-    .map(r => `${r.character_name}: ${r.score.toFixed(1)}`)
-    .join("<br>");
+  const rows = await voteRes.json();
 
+  // Fetch selected winners (to know which to spoiler)
+  const winnerRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/poll_result?poll_id=eq.${POLL_ID}&select=option_id,selected_at`,
+    { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } }
+  );
+
+  const winners = await winnerRes.json();
+  const spoiledOptions = new Set(
+    winners.filter(r => r.selected_at !== null).map(r => r.option_id)
+  );
+
+  // Build leaderboard HTML
+  let leaderboardHTML = "";
+
+  rows.forEach(r => {
+    const isSpoiled = spoiledOptions.has(r.option_id);
+    let style = "";
+
+    if (isSpoiled) {
+      style = `
+        filter: blur(4px) brightness(0.6);
+        text-decoration: line-through;
+        color: #555;
+        pointer-events: none;
+      `;
+    }
+
+    leaderboardHTML += `<div style="${style}">${r.character_name}: ${r.score.toFixed(1)}</div>`;
+  });
+
+  resultsBox.innerHTML = leaderboardHTML || "Loading…";
+
+  // Also update card labels (unchanged)
   document.querySelectorAll(".card").forEach(card => {
     const id = Number(card.dataset.id);
     const row = rows.find(r => r.option_id === id);
