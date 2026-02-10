@@ -167,3 +167,10 @@ fetchResults();
 fetchLeaderboard();
 setInterval(fetchResults, 30000);
 setInterval(fetchLeaderboard, 30000);
+
+// Randomize wobble timing for each card/big card so they don't all move in sync
+document.querySelectorAll('.card, .big-card').forEach(el => {
+  // Random offset between 0 and 1.5 seconds
+  const offset = Math.random() * 1.5;
+  el.style.setProperty('--random-offset', `${offset}s`);
+});
