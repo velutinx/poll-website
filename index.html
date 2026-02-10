@@ -191,38 +191,48 @@ h1, p { text-align: center; }
   transform: scale(1.02); /* optional small lift effect */
   transition: all 0.8s ease; /* slower reveal on hover */
 }
-/* Wobble / jelly effect - continuous for big cards, hover for small */
-@keyframes wobble {
-  0% { transform: scale(1) rotate(0deg); }
-  15% { transform: scale(1.03) rotate(-1.3deg); }
-  30% { transform: scale(1.03) rotate(1.3deg); }
-  45% { transform: scale(1.02) rotate(-1.0deg); }
-  60% { transform: scale(1.02) rotate(1.0deg); }
-  75% { transform: scale(1.01) rotate(-0.7deg); }
-  90% { transform: scale(1.01) rotate(0.7deg); }
-  100% { transform: scale(1) rotate(0deg); }
+/* Organic wobble - randomized squish/stretch, no predictable rotation */
+@keyframes wobble-random {
+  0% {
+    transform: scaleX(1) scaleY(1);
+  }
+  20% {
+    transform: scaleX(1.04) scaleY(0.97);
+  }
+  40% {
+    transform: scaleX(0.98) scaleY(1.05);
+  }
+  60% {
+    transform: scaleX(1.03) scaleY(0.96);
+  }
+  80% {
+    transform: scaleX(0.97) scaleY(1.04);
+  }
+  100% {
+    transform: scaleX(1) scaleY(1);
+  }
 }
 
-/* Apply to big cards - always wobbling */
+/* Big cards - always wobbling, slightly different speed per card for organic feel */
 .big-card {
-  animation: wobble 4.0s ease-in-out infinite;
+  animation: wobble-random calc(3.8s + var(--random-offset, 0s)) ease-in-out infinite;
   transform-origin: center center;
 }
 
-/* Apply to small cards - only on hover */
+/* Small cards - wobble only on hover, also randomized */
 .card {
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease;
 }
 
 .card:hover {
-  animation: wobble 4.0s ease-in-out infinite;
+  animation: wobble-random calc(3.2s + var(--random-offset, 0s)) ease-in-out infinite;
   transform-origin: center center;
 }
 
-/* Optional: make hover feel more responsive */
+/* Optional hover lift */
 .card:hover {
   cursor: pointer;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* subtle lift */
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
 }
 </style>
 </head>
