@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VELUTINX</title>
+
+<style>
+/* =========================================================
+   ===== Root Variables
+   ========================================================= */
+:root {
+  --bg: #d4d0c1;
+  --divider: #aa9e76;
+  --text: #111;
+
+  --bg-dark: #0f0f12;
+  --divider-dark: #6f6a4e;
+  --text-dark: #e6e3d8;
+}
+
+/* =========================================================
+   ===== Global Reset & Body  (CLEANED)
+   ========================================================= */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+  overflow-x: hidden;
+  transition: background 0.6s ease, color 0.6s ease;
+}
+
+body.dark {
+  background: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+/* ✅ Page load animation (now matched to commissions/contact) */
+#page {
+  opacity: 0;
+  transform: translateY(60px);
+  animation: pageReveal 0.7s ease-out forwards;
+}
+
+@keyframes pageReveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+   ===== Language Swipe Overlay
+   ========================================================= */
+.lang-swipe {
+  position: fixed;
+  bottom: -120%;
+  left: 0;
+  width: 100%;
+  height: 120%;
+  background: var(--divider);
+  z-index: 10000;
+  pointer-events: none;
+}
+.lang-swipe.active {
+  animation: langSwipeUp 0.55s ease-in forwards;
+}
+
+@keyframes langSwipeUp {
+  to { bottom: 120%; }
+}
+
+/* =========================================================
+   ===== Side Controls
+   ========================================================= */
+.lang-toggle {
+  position: fixed;
+  top: 20%;
+  right: 24px;
+  width: 54px;
+  height: 54px;
+  background: var(--divider);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  cursor: pointer;
+  border-radius: 6px;
+  z-index: 9999;
+}
+.lang-toggle:hover {
+  animation: langWobble 1.6s ease-in-out infinite;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 80%;
+  right: 24px;
+  width: 72px;
+  height: 36px;
+  background: #cfcab8;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  z-index: 9999;
+}
+.theme-toggle:hover {
+  animation: langWobble 1.6s ease-in-out infinite;
+}
+
+.theme-knob {
+  width: 28px;
+  height: 28px;
+  background: #000;
+  border-radius: 50%;
+  color: #fff;
+  transition: transform 0.4s ease, background 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.theme-knob::before { content: "🌙"; }
+
+body.dark .theme-toggle { background: #111; }
+body.dark .theme-knob {
+  transform: translateX(34px);
+  background: var(--divider-dark);
+}
+body.dark .theme-knob::before { content: "☀️"; }
+
+/* =========================================================
+   ===== Wobble Animations
+   ========================================================= */
+@keyframes langWobble {
+  0% { transform: scale(1.1) rotate(0deg); }
+  25% { transform: scale(1.1) rotate(-18deg); }
+  50% { transform: scale(1.1) rotate(18deg); }
+  75% { transform: scale(1.1) rotate(-10deg); }
+  100% { transform: scale(1.1) rotate(0deg); }
+}
+
+/* =========================================================
+   ===== Navigation Blobs
+   ========================================================= */
+.nav {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  padding: 28px 16px 10px;
+}
+
+.blob-btn {
+  width: 180px;
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.blob-btn:hover {
+  animation: blobWobble 1.6s ease-in-out infinite;
+}
+
+@keyframes blobWobble {
+  0% { transform: scale(1.15) rotate(0deg); }
+  25% { transform: scale(1.15) rotate(-4deg); }
+  50% { transform: scale(1.15) rotate(4deg); }
+  75% { transform: scale(1.15) rotate(-3deg); }
+  100% { transform: scale(1.15) rotate(0deg); }
+}
+
+.blob-svg path {
+  fill: none;
+  stroke: var(--divider);
+  stroke-width: 6;
+}
+body.dark .blob-svg path { stroke: var(--divider-dark); }
+
+.blob-text {
+  font-weight: 900;
+  letter-spacing: 2px;
+  font-size: 19px;
+  fill: var(--text);
+  pointer-events: none;
+}
+body.dark .blob-text { fill: var(--text-dark); }
+
+/* =========================================================
+   ===== Dividers
+   ========================================================= */
+.divider {
+  width: 80%;
+  height: 6px;
+  background: var(--divider);
+  margin: 22px auto;
+  border-radius: 4px;
+}
+body.dark .divider { background: var(--divider-dark); }
+
+/* =========================================================
+   ===== Hero Section
+   ========================================================= */
+.hero {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+
+.hero-image {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+.hero-image img {
+  width: 320px;
+  border-radius: 16px;
+  z-index: 1;
+}
+
+.social-star {
+  position: absolute;
+  color: var(--divider);
+  font-size: 18px;
+  pointer-events: none;
+  animation: socialStarFall 6s linear forwards;
+  z-index: 2;
+}
+@keyframes socialStarFall {
+  from { opacity: 0; transform: translateY(-20px); }
+  10% { opacity: 1; }
+  to { opacity: 0; transform: translateY(300px); }
+}
+
+.hero-text { text-align: center; }
+.hero-name { font-size: 42px; font-weight: 800; letter-spacing: 4px; }
+.hero-sub { font-size: 14px; letter-spacing: 1px; margin: 10px 0; }
+
+/* =========================================================
+   ===== Discord Button
+   ========================================================= */
+.discord-link img {
+  width: 220px;
+  cursor: pointer;
+}
+.discord-link img:hover {
+  animation: blobWobble 1.6s ease-in-out infinite;
+}
+
+/* =========================================================
+   ===== Cursor Sparkles
+   ========================================================= */
+.star {
+  position: fixed;
+  pointer-events: none;
+  color: var(--divider);
+  font-size: 14px;
+  animation: driftFall 2s ease-out forwards;
+  z-index: 9999;
+}
+@keyframes driftFall {
+  to {
+    opacity: 0;
+    transform: translate(calc(-20px + 40px * var(--drift)), 90px) scale(0.4);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="lang-swipe" id="langSwipe"></div>
+<div class="lang-toggle" id="langToggle">日本語</div>
+<div class="theme-toggle" id="themeToggle"><div class="theme-knob"></div></div>
+
+<!-- =========================================================
+   ===== MAIN PAGE CONTENT (animated)
+   ========================================================= -->
+<div id="page">
+
+<div class="nav">
+  <svg class="blob-btn blob-svg" id="navHome" viewBox="0 0 320 90">
+    <path d="M25,45 C15,15 90,5 150,15 C230,25 310,10 295,55 C280,85 210,75 140,80 C70,85 35,75 25,45 Z"/>
+    <text x="160" y="58" text-anchor="middle" class="blob-text"
+      data-en="HOME" data-jp="ホーム">HOME</text>
+  </svg>
+
+  <svg class="blob-btn blob-svg" id="navCom" viewBox="0 0 320 90">
+    <path d="M15,50 C20,10 100,5 160,15 C250,30 315,20 300,60 C285,85 200,80 130,75 C60,70 10,80 15,50 Z"/>
+    <text x="160" y="58" text-anchor="middle" class="blob-text"
+      data-en="COMMISSIONS" data-jp="コミッション">COMMISSIONS</text>
+  </svg>
+
+  <svg class="blob-btn blob-svg" id="navArt" viewBox="0 0 320 90">
+    <path d="M35,40 C10,15 80,0 150,10 C240,25 320,15 300,55 C280,90 210,85 140,80 C70,75 55,70 35,40 Z"/>
+    <text x="160" y="58" text-anchor="middle" class="blob-text"
+      data-en="ARTWORK" data-jp="アートワーク">ARTWORK</text>
+  </svg>
+
+  <svg class="blob-btn blob-svg" id="navPoll" viewBox="0 0 320 90">
+    <path d="M20,45 C10,20 90,0 160,10 C240,20 320,30 300,60 C280,90 200,80 140,75 C70,70 30,75 20,45 Z"/>
+    <text x="160" y="58" text-anchor="middle" class="blob-text"
+      data-en="POLL" data-jp="ポール">POLL</text>
+  </svg>
+
+  <svg class="blob-btn blob-svg" id="navContact" viewBox="0 0 320 90">
+    <path d="M15,45 C25,5 110,10 170,20 C250,35 330,25 300,65 C270,100 180,80 120,75 C60,70 10,80 15,45 Z"/>
+    <text x="160" y="58" text-anchor="middle" class="blob-text"
+      data-en="CONTACT" data-jp="お問い合わせ">CONTACT</text>
+  </svg>
+</div>
+
+<div class="divider"></div>
+
+<section class="hero">
+  <div class="hero-image" id="heroImage">
+    <img src="https://velutinx.neocities.org/Images/Main.jpg">
+  </div>
+
+  <div class="hero-text">
+    <div class="hero-name">VELUTINX</div>
+    <div class="hero-sub" id="heroSub">♡ Freelance Illustrator ♡</div>
+    <div class="hero-sub">🇺🇸 / 🇯🇵 / 🇪🇸 = OK!</div>
+    <div class="divider"></div>
+
+    <a class="discord-link" href="https://discord.gg/6sHSVMEE" target="_blank">
+      <img src="https://velutinx.neocities.org/Images/LogoDiscord.png">
+    </a>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+</div> <!-- END #page -->
+
+<script>
+/* =========================================================
+   ===== Navigation Links
+   ========================================================= */
+navHome.onclick = () => location.href = "index.html";
+navCom.onclick = () => location.href = "comission.html";
+navArt.onclick = () => location.href = "artwork.html";
+navContact.onclick = () => location.href = "contact.html";
+navPoll.onclick = () =>
+  location.href = "https://velutinx.github.io/poll-website/";
+
+/* =========================================================
+   ===== Language Toggle
+   ========================================================= */
+let isJapanese = false;
+const blobTexts = document.querySelectorAll(".blob-text");
+const heroSub = document.getElementById("heroSub");
+
+langToggle.onclick = () => {
+  langSwipe.classList.remove("active");
+  void langSwipe.offsetWidth;
+  langSwipe.classList.add("active");
+
+  setTimeout(() => {
+    isJapanese = !isJapanese;
+
+    blobTexts.forEach(t => {
+      t.textContent = isJapanese ? t.dataset.jp : t.dataset.en;
+    });
+
+    heroSub.textContent = isJapanese
+      ? "♡ フリーランスイラストレーター ♡"
+      : "♡ Freelance Illustrator ♡";
+
+    langToggle.textContent = isJapanese ? "EN" : "日本語";
+  }, 180);
+};
+
+/* =========================================================
+   ===== Theme Toggle
+   ========================================================= */
+themeToggle.onclick = () => document.body.classList.toggle("dark");
+
+/* =========================================================
+   ===== Cursor Sparkles
+   ========================================================= */
+let lastStarTime = 0;
+document.addEventListener("mousemove", (e) => {
+  const now = Date.now();
+  if (now - lastStarTime < 45) return;
+  lastStarTime = now;
+
+  const star = document.createElement("div");
+  star.className = "star";
+  star.textContent = "✦";
+  star.style.setProperty("--drift", Math.random());
+  star.style.left = e.clientX + "px";
+  star.style.top = e.clientY + "px";
+
+  document.body.appendChild(star);
+  setTimeout(() => star.remove(), 2000);
+});
+
+/* =========================================================
+   ===== Hero Falling Stars
+   ========================================================= */
+const heroImage = document.getElementById("heroImage");
+setInterval(() => {
+  const star = document.createElement("div");
+  star.className = "social-star";
+  star.textContent = "✦";
+  star.style.left = Math.random() * heroImage.clientWidth + "px";
+  star.style.top = "0px";
+  heroImage.appendChild(star);
+  setTimeout(() => star.remove(), 6000);
+}, 700);
+</script>
+
+</body>
+</html>
